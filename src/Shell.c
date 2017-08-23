@@ -17,9 +17,9 @@ char* Shell_GetLine(void)
 {
 	fputs(SHELL_PROMPT, stdout);
 
-	memset(lineBuffer, 0, SHELL_LINE_LEN_LIMIT);
+	memset(lineBuffer, 0, sizeof(lineBuffer));
 
-	fgets(lineBuffer, SHELL_LINE_LEN_LIMIT, stdin);
+	fgets(lineBuffer, sizeof(lineBuffer), stdin);
 
 	return lineBuffer;
 }
