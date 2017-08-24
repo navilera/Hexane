@@ -1,0 +1,80 @@
+/*
+ * ShellTest.c
+ *
+ *  Created on: Aug 23, 2017
+ *      Author: maanu
+ */
+
+#include "TestMain.h"
+
+#include "Main.h"
+#include "Lexer.h"
+
+static char* suiteName = "Lexer Test";
+
+static uint32_t GetSerialize(Symbol_t* symlist)
+{
+	uint32_t result = 0;
+	for(Symbol_t *sym = symlist; *sym != SYM_NOSYM ; ++sym)
+	{
+		result <<= 4;
+		result |= ((uint32_t)*sym) & 0xF;
+	}
+
+	return result;
+}
+
+static bool Common(char* line, Symbol_t* expect)
+{
+	Symbol_t* symlist = Lexer_GetSym(line);
+
+	uint32_t serializeActual = GetSerialize(symlist);
+	uint32_t serializeExpect = GetSerialize(expect);
+
+	ASSERT((serializeExpect == serializeActual), ASSERTMSG_INT_FAIL(serializeExpect, serializeActual));
+}
+
+static bool GetSymTest01(void)
+{
+	char* line = "$akaslgl 30230203 c0ffee\n";
+	Symbol_t expect[4] = {SYM_ID, SYM_INT, SYM_INT, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool GetSymTest02(void)
+{
+	char* line = "$akaslgl30230203 c0ffee 23849\n";
+	Symbol_t expect[4] = {SYM_ID, SYM_INT, SYM_INT, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool GetSymTest03(void)
+{
+	char* line = "$akaslgl30230203 c0ffee 23849 134578ae asldfpksdf 3324 $asdfl\n";
+	Symbol_t expect[6] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_ERR, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool GetSymTest04(void)
+{
+	char* line = "$akaslgl30230203 c0ffee 23849 134578ae $234235\n";
+	Symbol_t expect[6] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_ID, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
+static void Init(TestSuite_t* suite)
+{
+    suite->name = suiteName;
+
+    AddTestCase(suite, GetSymTest01, "GetSym Test01");
+    AddTestCase(suite, GetSymTest02, "GetSym Test02");
+    AddTestCase(suite, GetSymTest03, "GetSym Test [invalid token]");
+    AddTestCase(suite, GetSymTest04, "GetSym Test [numeric variable name]");
+}
+
+REGISTER_SUITE_FUNC(ShellTest, Init)
+
