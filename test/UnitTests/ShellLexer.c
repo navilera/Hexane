@@ -34,7 +34,7 @@ static bool Common(char* line, Symbol_t* expect)
 	ASSERT((serializeExpect == serializeActual), ASSERTMSG_INT_FAIL(serializeExpect, serializeActual));
 }
 
-static bool GetSymTest01(void)
+static bool GetSymTest00(void)
 {
 	char* line = "$akaslgl 30230203 c0ffee\n";
 	Symbol_t expect[4] = {SYM_ID, SYM_INT, SYM_INT, SYM_NOSYM};
@@ -42,7 +42,7 @@ static bool GetSymTest01(void)
 	return Common(line, expect);
 }
 
-static bool GetSymTest02(void)
+static bool GetSymTest01(void)
 {
 	char* line = "$akaslgl30230203 c0ffee 23849\n";
 	Symbol_t expect[4] = {SYM_ID, SYM_INT, SYM_INT, SYM_NOSYM};
@@ -50,7 +50,7 @@ static bool GetSymTest02(void)
 	return Common(line, expect);
 }
 
-static bool GetSymTest03(void)
+static bool GetSymTest02(void)
 {
 	char* line = "$akaslgl30230203 c0ffee 23849 134578ae asldfpksdf 3324 $asdfl\n";
 	Symbol_t expect[6] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_ERR, SYM_NOSYM};
@@ -58,10 +58,26 @@ static bool GetSymTest03(void)
 	return Common(line, expect);
 }
 
-static bool GetSymTest04(void)
+static bool GetSymTest03(void)
 {
 	char* line = "$akaslgl30230203 c0ffee 23849 134578ae $234235\n";
 	Symbol_t expect[6] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_ID, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool GetSymTest04(void)
+{
+	char* line = "$akaslgl30230203 c0ffee 23849 134$578ae $234235\n";
+	Symbol_t expect[5] = {SYM_ID, SYM_INT, SYM_INT, SYM_ERR, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool GetSymTest05(void)
+{
+	char* line = "$akaslgl30230203 c0ffee 23849 134578ae sldfpksdf 3324 $asdfl\n";
+	Symbol_t expect[6] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_ERR, SYM_NOSYM};
 
 	return Common(line, expect);
 }
@@ -70,10 +86,12 @@ static void Init(TestSuite_t* suite)
 {
     suite->name = suiteName;
 
-    AddTestCase(suite, GetSymTest01, "GetSym Test01");
-    AddTestCase(suite, GetSymTest02, "GetSym Test02");
-    AddTestCase(suite, GetSymTest03, "GetSym Test [invalid token]");
-    AddTestCase(suite, GetSymTest04, "GetSym Test [numeric variable name]");
+    AddTestCase(suite, GetSymTest00, "GetSym Test01");
+    AddTestCase(suite, GetSymTest01, "GetSym Test02");
+    AddTestCase(suite, GetSymTest02, "GetSym Test [invalid token01]");
+    AddTestCase(suite, GetSymTest03, "GetSym Test [numeric variable name]");
+    AddTestCase(suite, GetSymTest04, "GetSym Test [invalid token02]");
+    AddTestCase(suite, GetSymTest05, "GetSym Test [invalid token03]");
 }
 
 REGISTER_SUITE_FUNC(ShellTest, Init)
