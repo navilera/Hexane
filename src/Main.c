@@ -5,12 +5,7 @@
  *      Author: maanu
  */
 
-#include <stddef.h>
-#include <inttypes.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <stdbool.h>
-
+#include "Main.h"
 #include "Shell.h"
 #include "Lexer.h"
 
