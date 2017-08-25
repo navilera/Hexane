@@ -82,6 +82,34 @@ static bool GetSymTest05(void)
 	return Common(line, expect);
 }
 
+static bool GetSymTest06(void)
+{
+	char* line = "$akaslgl30230203 c0ffee 23849 134578ae sldfpksdf 3324 $asdfl\n";
+	Lexer_GetSym(line);
+
+	uint64_t getInt = Lexer_GetIntVal(2);
+
+	ASSERT((getInt == 0x23849), ASSERTMSG_INT_FAIL(0x23849, getInt));
+}
+
+static bool GetSymTest07(void)
+{
+	char* line = "$akaslgl30230203 c0ffee 23849 134578ae $sldfpksdf 3324 $asdfl\n";
+	Lexer_GetSym(line);
+
+	char* getId = Lexer_GetIdName(4);
+
+	ASSERT((strncmp(getId, "sldfpksdf", strlen("sldfpksdf")) == 0), ASSERTMSG_STR_FAIL("sldfpksdf", getId));
+}
+
+static bool GetSymTest08(void)
+{
+	char* line = "$akaslgl30230203 c0ffee 23849 134578ae $ 3324 $asdfl\n";
+	Symbol_t expect[6] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_ERR, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
 static void Init(TestSuite_t* suite)
 {
     suite->name = suiteName;
@@ -92,6 +120,9 @@ static void Init(TestSuite_t* suite)
     AddTestCase(suite, GetSymTest03, "GetSym Test [numeric variable name]");
     AddTestCase(suite, GetSymTest04, "GetSym Test [invalid token02]");
     AddTestCase(suite, GetSymTest05, "GetSym Test [invalid token03]");
+    AddTestCase(suite, GetSymTest06, "GetSym Test [get int value]");
+    AddTestCase(suite, GetSymTest07, "GetSym Test [get str value]");
+    AddTestCase(suite, GetSymTest08, "GetSym Test [invalid token04]");
 }
 
 REGISTER_SUITE_FUNC(ShellTest, Init)
