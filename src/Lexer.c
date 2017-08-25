@@ -76,6 +76,25 @@ Symbol_t* Lexer_GetSym(char* line)
 		else if(*ch == '$')
 		{
 			int i = 0;
+
+			// cancel previous symbol
+			if(symbolBuffer[index-1] == SYM_INT)
+			{
+				// cancel in this case
+				// 390acd0adskw
+				//          ^
+				if(*(ch-1) != ' ')
+				{
+					// if in this case, do not cancel
+					// 23824 keowd
+					//       ^
+					index--;
+					symbolBuffer[index] = SYM_ERR;
+					symErrorPosition = (uint32_t)(ch - line);
+					return symbolBuffer;
+				}
+			}
+
 			memset(idSymBuffer, 0, sizeof(idSymBuffer));
 			++ch;
 			while((*ch >= '0' && *ch <= '9') ||

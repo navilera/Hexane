@@ -36,7 +36,7 @@ test: $(TESTDIR)/testgo
 testclean:
 	@rm $(TESTDIR)/testgo
 
-$(TESTDIR)/testgo: $(TEST_F_FILES) $(TEST_F_HEADERS)
+$(TESTDIR)/testgo: $(TEST_F_FILES) $(TEST_F_HEADERS) $(TEST_M_FILES)
 	@$(CC) $(CFLAGS) $(TEST_F_FILES) $(TEST_T_FILES) $(TEST_M_FILES) -I$(TESTDIR)/Framework -o $@
 	@echo "Unit Test build Done."
 
