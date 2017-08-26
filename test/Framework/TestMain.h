@@ -13,6 +13,29 @@
     void RegisterSuite ## suiteName(void) \
     { TestSuite_t* suite = (TestSuite_t*)malloc(sizeof(TestSuite_t)); memset(suite, 0, sizeof(TestSuite_t)); suite->initFunc = init_func; AddTestSuite(suite); }
 
+#define PRE_TEST_BEGIN() static bool preTest(void){
+#define PRE_TEST_END return true;} \
+    __attribute__ ((__constructor__)) static void regPreTest ## suiteName(void) \
+    {suite.preTestFunc = preTest;}
+
+#define POST_TEST_BEGIN() static bool postTest(void){
+#define POST_TEST_END return true;} \
+    __attribute__ ((__constructor__)) static void regPostTest ## suiteName(void) \
+    {suite.postTestFunc = postTest;}
+
+#define TESTCASE(idx, desc) \
+    static bool testauto##idx(void); \
+    __attribute__ ((__constructor__)) static void regTest ## idx(void) \
+    {AddTestCase(&suite, testauto##idx, desc);} \
+    static bool testauto##idx(void)
+
+#define REGISTER_SUITE_AUTO(suiteName, suiteDesc) \
+    static TestSuite_t suite = {0};\
+    static char* suiteNameStr = suiteDesc;\
+    static void Init(TestSuite_t* suite) {printf("Auto Initialization\n");} \
+    __attribute__ ((__constructor__)) static void RegisterSuite ## suiteName(void) \
+    { suite.name = suiteNameStr; suite.initFunc = Init; AddTestSuite(&suite);}
+
 #define TESTCASEINDENT  "  "
 #define TESTCASEMSGINDENT "    "
 
