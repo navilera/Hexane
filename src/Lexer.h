@@ -12,6 +12,16 @@ typedef enum {
 	SYM_NOSYM = 0,
 	SYM_INT,
 	SYM_ID,
+	SYM_COL,
+	SYM_DOT,
+	SYM_LPAR,
+	SYM_RPAR,
+	SYM_PLUS,
+	SYM_MIN,
+	SYM_MUL,
+	SYM_DIV,
+	SYM_RIM,
+	SYM_EQU,
 	SYM_ERR,
 	NumberOfSymbols
 } Symbol_t;

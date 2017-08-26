@@ -11,6 +11,16 @@
 /*
  * SYM_INT	[0-9a-fA-F]+	// default integer is hex value
  * SYM_ID	$[0-9a-zA-z_]+
+ * SYM_COL 	:
+ * SYM_DOT	.
+ * SYM_LPAR (
+ * SYM_RPAR )
+ * SYM_PLUS +
+ * SYM_MIN	-
+ * SYM_MUL	*
+ * SYM_DIV	/
+ * SYM_RIM	%
+ * SYM_EQU	=
  */
 
 static Symbol_t symbolBuffer[LEX_SYM_NUM_LIMIT];
@@ -26,6 +36,8 @@ static bool getHexInt(char** chBack, uint64_t* intValBack);
 static bool getId(char** chBack, char** idSymStr);
 static bool cancelPrevSymbol(int index, char* ch, char* line);
 static void setError(int index, char* ch, char* line);
+
+#define AddSimpleSym(sym) {symbolBuffer[index] = sym; ++index; ++ch;}
 
 Symbol_t* Lexer_GetSym(char* line)
 {
@@ -45,6 +57,16 @@ Symbol_t* Lexer_GetSym(char* line)
 			++ch;
 			continue;
 		}
+		else if(*ch == ':') {AddSimpleSym(SYM_COL);}
+		else if(*ch == '.') {AddSimpleSym(SYM_DOT);}
+		else if(*ch == '(') {AddSimpleSym(SYM_LPAR);}
+		else if(*ch == ')') {AddSimpleSym(SYM_RPAR);}
+		else if(*ch == '+') {AddSimpleSym(SYM_PLUS);}
+		else if(*ch == '-') {AddSimpleSym(SYM_MIN);}
+		else if(*ch == '*') {AddSimpleSym(SYM_MUL);}
+		else if(*ch == '/') {AddSimpleSym(SYM_DIV);}
+		else if(*ch == '%') {AddSimpleSym(SYM_RIM);}
+		else if(*ch == '=') {AddSimpleSym(SYM_EQU);}
 		else if(*ch == '\n')
 		{
 			return symbolBuffer;
@@ -80,7 +102,7 @@ Symbol_t* Lexer_GetSym(char* line)
 			// cancel previous symbol if invalid token happens
 			if(cancelPrevSymbol(index, ch, line))
 			{
-				index--;
+				return symbolBuffer;
 			}
 			setError(index, ch, line);
 			return symbolBuffer;
@@ -200,6 +222,7 @@ static bool cancelPrevSymbol(int index, char* ch, char* line)
 			// 23824 keowd
 			//       ^
 			setError((index-1), ch, line);
+			symErrorPosition = (uint32_t)(ch - line);
 			return true;
 		}
 	}

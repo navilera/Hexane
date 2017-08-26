@@ -110,6 +110,49 @@ static bool GetSymTest08(void)
 	return Common(line, expect);
 }
 
+static bool GetSymTest09(void)
+{
+	char* line = "$akaslgl=$aoekd+400AE8+$ldske\n";
+	Symbol_t expect[8] = {SYM_ID, SYM_EQU, SYM_ID, SYM_PLUS, SYM_INT, SYM_PLUS, SYM_ID, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool GetSymTest10(void)
+{
+	char* line = "$akaslgl=$aoekd+400AE8+$ldske\n";
+	Lexer_GetSym(line);
+
+	uint64_t getInt = Lexer_GetIntVal(4);
+
+	ASSERT((getInt == 0x400AE8), ASSERTMSG_INT_FAIL(0x400AE8, getInt));
+}
+
+static bool GetSymTest11(void)
+{
+	char* line = "$akaslgl =$aoekd + 400AE8+  $ldske\n";
+	Symbol_t expect[8] = {SYM_ID, SYM_EQU, SYM_ID, SYM_PLUS, SYM_INT, SYM_PLUS, SYM_ID, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool GetSymTest12(void)
+{
+	char* line = "$akaslgl30230203 c0ffee 23849 134=$578ae $234235\n";
+	Symbol_t expect[8] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_EQU, SYM_ID, SYM_ID, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool GetSymTest13(void)
+{
+	char* line = ":. ( +   ) $akaslgl -+30230 /203 $c0 %ffee = 23849 134=$578ae $234235\n";
+	Symbol_t expect[21] = {SYM_COL, SYM_DOT, SYM_LPAR, SYM_PLUS, SYM_RPAR, SYM_ID, SYM_MIN, SYM_PLUS, SYM_INT, SYM_DIV, SYM_INT, SYM_ID, SYM_RIM, SYM_INT, SYM_EQU,
+			SYM_INT, SYM_INT, SYM_EQU, SYM_ID, SYM_ID, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
 static void Init(TestSuite_t* suite)
 {
     suite->name = suiteName;
@@ -123,6 +166,11 @@ static void Init(TestSuite_t* suite)
     AddTestCase(suite, GetSymTest06, "GetSym Test [get int value]");
     AddTestCase(suite, GetSymTest07, "GetSym Test [get str value]");
     AddTestCase(suite, GetSymTest08, "GetSym Test [invalid token04]");
+    AddTestCase(suite, GetSymTest09, "GetSym Test [id=id+int+id]");
+    AddTestCase(suite, GetSymTest10, "GetSym Test [get int value]");
+    AddTestCase(suite, GetSymTest11, "GetSym Test [mixed space]");
+    AddTestCase(suite, GetSymTest12, "GetSym Test [mixed token]");
+    AddTestCase(suite, GetSymTest13, "GetSym Test [complex token]");
 }
 
 REGISTER_SUITE_FUNC(ShellTest, Init)
