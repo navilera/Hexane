@@ -7,6 +7,9 @@ static void InitTestUnit(void);
 static void RunTest(void);
 static void ReportTestResult(void);
 
+static uint32_t BeautiPrint_GetLongestNameLen(TestCase_t* testCasePtr);
+static void BeautiPrint_GetCurrentPadLen(char* name, int maxLen);
+
 int main(int argc, char* argv[])
 {
     InitTestUnit();
@@ -100,9 +103,12 @@ static void RunTest(void)
             printf("===== PreTest Done =====\n");
         }
 
+        uint32_t beautiprintMaxLen = BeautiPrint_GetLongestNameLen(testSuitePtr->testCaseList);
+
         for(testCasePtr = testSuitePtr->testCaseList ; testCasePtr != NULL ; testCasePtr = testCasePtr->next)
         {
-            printf(TESTCASEINDENT "Case %d [%s] ... ", caseCount++, testCasePtr->name);
+            printf(TESTCASEINDENT "Case %d [%s] ", caseCount++, testCasePtr->name);
+            BeautiPrint_GetCurrentPadLen(testCasePtr->name, beautiprintMaxLen);
 
             if(testCasePtr->testFunc != NULL)
             {
@@ -111,7 +117,7 @@ static void RunTest(void)
                 testCasePtr->result = testCasePtr->testFunc();
                 if(testCasePtr->result)
                 {
-                    printf("PASS\n");
+                    printf(" PASS\n");
                     testUnit.totalPass++;
                 }
                 else
@@ -143,4 +149,25 @@ static void ReportTestResult(void)
 	printf("Fail......................%04d\n", testUnit.totalFail);
 }
 
+static uint32_t BeautiPrint_GetLongestNameLen(TestCase_t* testCasePtr)
+{
+	uint32_t maxLen = 0;
+	for(; testCasePtr != NULL ; testCasePtr = testCasePtr->next)
+	{
+		uint32_t nameLen = strlen(testCasePtr->name);
+		maxLen = (nameLen > maxLen) ? nameLen : maxLen;
+	}
+
+	return (maxLen + 3);
+}
+
+static void BeautiPrint_GetCurrentPadLen(char* name, int maxLen)
+{
+	uint32_t padLen = maxLen - strlen(name);
+
+	while(padLen--)
+	{
+		putchar('.');
+	}
+}
 
