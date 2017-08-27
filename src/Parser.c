@@ -15,9 +15,9 @@
  *               | <id> = <expr>
  * <expr> ::= <addtive_expr>
  * <multiplicative_expr> ::= <term>
- *                         | <multiplicative_expr> * <expr>
- *                         | <multiplicative_expr> / <expr>
- *                         | <multiplicative_expr> % <expr>
+ *                         | <multiplicative_expr> * <term>
+ *                         | <multiplicative_expr> / <term>
+ *                         | <multiplicative_expr> % <term>
  * <addtive_expr> ::= <multiplicative_expr>
  *                  | <addtive_expr> + <multiplicative_expr>
  *                  | <addtive_expr> - <multiplicative_expr>
@@ -196,9 +196,9 @@ static ParserNode_t* additiv_expr(void)
 }
 
 // <multiplicative_expr> ::= <term>
-//                         | <multiplicative_expr> * <expr>
-//                         | <multiplicative_expr> / <expr>
-//                         | <multiplicative_expr> % <expr>
+//                         | <multiplicative_expr> * <term>
+//                         | <multiplicative_expr> / <term>
+//                         | <multiplicative_expr> % <term>
 static ParserNode_t* mutipli_expr(void)
 {
 	ParserNode_t* nodeMutipli;
@@ -226,7 +226,7 @@ static ParserNode_t* mutipli_expr(void)
 
 		symCurrent++;
 
-		nodeMul->child2 = expr();
+		nodeMul->child2 = term();
 		CHK_SYNERR_RETURN;
 
 		nodeMutipli = nodeMul;
