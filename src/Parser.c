@@ -79,16 +79,12 @@ void Parser_Release(ParserNode_t* parseResult)
 static char* getSymIdName(void)
 {
 	int index = (int)(symCurrent - symStart);
-	index /= sizeof(Symbol_t);
-
 	return Lexer_GetIdName(index);
 }
 
 static uint64_t getSymIntVal(void)
 {
 	int index = (int)(symCurrent - symStart);
-	index /= sizeof(Symbol_t);
-
 	return Lexer_GetIntVal(index);
 }
 
@@ -274,12 +270,4 @@ static ParserNode_t* term(void)
 
 	return nodeTerm;
 }
-
-/*
- *
-
-
- * <id> ::= SYM_ID
- * <int> ::= SYM_INT
- */
 

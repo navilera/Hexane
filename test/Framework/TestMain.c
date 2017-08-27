@@ -95,7 +95,7 @@ static void RunTest(void)
 
         testUnit.totalSuites++;
 
-        printf("==== Test suite [%s] Start ====\n", testSuitePtr->name);
+        printf("\n==== Test suite [%s] Start ====\n", testSuitePtr->name);
         if(testSuitePtr->preTestFunc != NULL)
         {
             printf("===== PreTest Start =====\n");
@@ -122,7 +122,7 @@ static void RunTest(void)
                 }
                 else
                 {
-                    printf(TESTCASEINDENT "FAIL\n");
+                    printf(TESTCASEINDENT FRED BYELLOW"FAIL"NONE"\n");
                     anyFail = true;
                     testUnit.totalFail++;
                 }
@@ -141,8 +141,16 @@ static void RunTest(void)
 
 static void ReportTestResult(void)
 {
-	printf("------------------------------\n");
-	printf("Report\n");
+	printf("\n------------------------------\n");
+	if(testUnit.totalFail)
+	{
+		printf(FYELLOW BRED);
+	}
+	else
+	{
+		printf(FYELLOW BGREEN);
+	}
+	printf("Report"NONE"\n");
 	printf("------------------------------\n");
 	printf("Total.....................%04d\n", testUnit.totalCases);
 	printf("Pass......................%04d\n", testUnit.totalPass);
