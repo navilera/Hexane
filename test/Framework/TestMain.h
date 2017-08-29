@@ -42,6 +42,8 @@
 #define ASSERTMSG_INT_FAIL(expect, actual)  "FAIL! expect 0x%lx actual 0x%lx\n", (uint64_t)expect, (uint64_t)actual
 #define ASSERTMSG_STR_FAIL(expect, actual)  "FAIL! expect [\"%s\"] actual [\"%s\"]\n", expect, actual
 
+#define ASSERT_CMPSTR(expect, actual) (strncmp(expect, actual, strlen(expect)) == 0)
+
 #define ASSERT(cond, msgfmt) if(!(cond)){printf("\n" TESTCASEMSGINDENT msgfmt);} return (cond);
 
 struct _test_suite_t_;
