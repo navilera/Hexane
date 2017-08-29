@@ -143,6 +143,7 @@ static ParserNode_t* statement(void)
 			symCurrent++;
 
 			nodeStatement->child2 = expr();
+
 			CHK_SYNERR_RETURN;
 		}
 		else
@@ -252,6 +253,7 @@ static ParserNode_t* term(void)
 	}
 	else if(*symCurrent == SYM_LPAR)
 	{
+		symCurrent++;
 		nodeTerm = expr();
 		CHK_SYNERR_RETURN;
 		if(*symCurrent == SYM_RPAR)
