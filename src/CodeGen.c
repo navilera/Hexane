@@ -5,6 +5,9 @@
  *      Author: maanu
  */
 
+#include "Main.h"
+#include "Lexer.h"
+#include "Parser.h"
 #include "CodeGen.h"
 
 static uint64_t lineCodeBuff[CODE_NUM_LIMIT];
@@ -15,7 +18,7 @@ static void addObjCode(ItmdCode_t c);
 static void addObjVal(uint64_t v);
 static void addObjName(char* n);
 
-ItmdCode_t* CodeGen_Compile(ParserNode_t* parseTree)
+uint64_t* CodeGen_Compile(ParserNode_t* parseTree)
 {
 	lineCodeBuffIndex = 0;
 	compiler(parseTree);

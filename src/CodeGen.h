@@ -24,6 +24,6 @@ typedef enum {
 
 #define CODE_NUM_LIMIT		1024
 
-ItmdCode_t* CodeGen_Compile(ParserNode_t* parseTree);
+uint64_t* CodeGen_Compile(ParserNode_t* parseTree);
 
 #endif /* SRC_CODEGEN_H_ */

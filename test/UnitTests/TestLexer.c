@@ -12,13 +12,13 @@
 
 static char* suiteName = "Lexer Test";
 
-static uint32_t GetSerialize(Symbol_t* symlist)
+static uint64_t GetSerialize(Symbol_t* symlist)
 {
-	uint32_t result = 0;
+	uint64_t result = 0;
 	for(Symbol_t *sym = symlist; *sym != SYM_NOSYM ; ++sym)
 	{
 		result <<= 4;
-		result |= ((uint32_t)*sym) & 0xF;
+		result |= ((uint64_t)*sym) & 0xF;
 	}
 
 	return result;
@@ -28,8 +28,8 @@ static bool Common(char* line, Symbol_t* expect)
 {
 	Symbol_t* symlist = Lexer_GetSym(line);
 
-	uint32_t serializeActual = GetSerialize(symlist);
-	uint32_t serializeExpect = GetSerialize(expect);
+	uint64_t serializeActual = GetSerialize(symlist);
+	uint64_t serializeExpect = GetSerialize(expect);
 
 	ASSERT((serializeExpect == serializeActual), ASSERTMSG_INT_FAIL(serializeExpect, serializeActual));
 }
