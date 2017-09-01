@@ -8,6 +8,10 @@
 #include "Main.h"
 #include "Shell.h"
 #include "Lexer.h"
+#include "Parser.h"
+#include "CodeGen.h"
+
+static bool checkInvalidSymbol(Symbol_t* symlist, const char* line);
 
 int main(int argc, char* argv[])
 {
@@ -17,35 +21,51 @@ int main(int argc, char* argv[])
 	{
 		char* line = Shell_GetLine();
 
-		printf("--> %s", line);
-
-		uint32_t symindex = 0;
 		Symbol_t* symlist = Lexer_GetSym(line);
-		for(Symbol_t *sym = symlist; *sym != SYM_NOSYM ; ++sym)
+		if(!checkInvalidSymbol(symlist, line))
 		{
-			printf("sym:%d ", *sym);
-			if(*sym == SYM_INT)
-			{
-				printf("int:%"PRIx64"\n", Lexer_GetIntVal(symindex));
-			}
-			if(*sym == SYM_ID)
-			{
-				printf("id:%s\n", Lexer_GetIdName(symindex));
-			}
-			if(*sym == SYM_ERR)
-			{
-				printf("Syntax error!!\n");
-				printf("%s", line);
-				uint32_t errpos = Lexer_GetErrorPos();
-				for(int i = 0; i < errpos ; ++i)
-				{
-					putchar(' ');
-				}
-				putchar('^');putchar('\n');
-			}
-			symindex++;
+			continue;
 		}
+
+		ParserNode_t* parseTree = Parser_Parse(symlist);
+		if(parseTree == NULL)
+		{
+			printf("Syntax error\n");
+			continue;
+		}
+
+		uint64_t* codelist = CodeGen_Compile(parseTree);
+		for(int i = 0 ; i < 1024 ; ++i)
+		{
+			if(codelist[i] == (uint64_t)Code_Halt)
+			{
+				break;
+			}
+			printf("%lx ", codelist[i]);
+		}
+		printf("\n");
 	}
 
 	return 0;
+}
+
+static bool checkInvalidSymbol(Symbol_t* symlist, const char* line)
+{
+	for(Symbol_t *sym = symlist; *sym != SYM_NOSYM ; ++sym)
+	{
+		if(*sym == SYM_ERR)
+		{
+			printf("Invalid Token\n");
+			printf("%s", line);
+			uint32_t errpos = Lexer_GetErrorPos();
+			for(int i = 0; i < errpos ; ++i)
+			{
+				putchar(' ');
+			}
+			putchar('^');putchar('\n');
+			return false;
+		}
+	}
+
+	return true;
 }
