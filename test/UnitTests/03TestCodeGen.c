@@ -38,7 +38,7 @@ static void serialize(uint64_t* resultlist, char* target_out)
 			sprintf(temp, "%s,", (char*)resultlist[i]);
 		}
 
-		if(resultlist[i] == (uint64_t)Code_Str)
+		if(resultlist[i] == (uint64_t)Code_Str || resultlist[i] == (uint64_t)Code_Ldr)
 		{
 			nextIsId = true;
 		}
@@ -80,4 +80,12 @@ TESTCASE(codegen02, "Complex Expression code Gen 02")
 	return common(line, expect);
 }
 
-//c0ffee + 15 - (10 + $me) * 30+AB*$sx+(60+CD)*EFF*AD
+TESTCASE(codegen03, "Complex Expression code Gen 03")
+{
+	char* line = "c0ffee + 15 - (10 + $me) * 30+AB*$sx+(60+CD)*EFF*AD\n";
+	uint64_t expect[64] = {Code_Mov, 0xC0FFEE, Code_Mov, 0x15, Code_Add, Code_Mov, 0x10, Code_Ldr, (uint64_t)"me", Code_Add, Code_Mov, 0x30, Code_Mul, Code_Sub, Code_Mov, 0xab, Code_Ldr, (uint64_t)"sx",
+				Code_Mul, Code_Add, Code_Mov, 0x60, Code_Mov, 0xcd, Code_Add, Code_Mov, 0xeff, Code_Mul, Code_Mov, 0xad, Code_Mul, Code_Add, Code_Halt, 0};
+
+	return common(line, expect);
+}
+

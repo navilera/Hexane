@@ -30,13 +30,6 @@ static bool commonTestType(char* line, Bnf_t testType, int* targetDepth)
 {
 	Symbol_t* symlist = Lexer_GetSym(line);
 	ParserNode_t* parseTree = Parser_Parse(symlist);
-
-	if(parseTree == NULL)
-	{
-		printf(TESTCASEMSGINDENT "FAIL.. Syntax Error\n");
-		return false;
-	}
-
 	ParserNode_t* parseTreeIndex = parseTree;
 	for(int* idx = targetDepth ; *idx ; ++idx)
 	{
@@ -207,4 +200,22 @@ TESTCASE(complexExpr_Id_Test03, "Complex Expression ID Test03")
 	char* line = "$res = c0ffee + 15 - (10 + $me) * 30+AB*$sx+(60+CD)*EFF*AD\n";
 	int depth[30] = {1, 2, 1, 2, 2, 0};
 	return commonTestName(line, "sx", depth);
+}
+
+TESTCASE(syntaxError01, "Syntax Error Test01")
+{
+	char* line = "$res = c0ffee + 15 - (10 + $me) * 30+AB = $sx+(60+CD)*EFF*AD\n";
+	Symbol_t* symlist = Lexer_GetSym(line);
+	ParserNode_t* parseTree = Parser_Parse(symlist);
+
+	ASSERT((parseTree == NULL), ASSERTMSG_INT_FAIL(NULL, parseTree));
+}
+
+TESTCASE(syntaxError02, "Syntax Error Test02")
+{
+	char* line = "$res = c0ffee + 15 - (10 + $me) * 30+ABM + $sx+(60+CD)*EFF*AD\n";
+	Symbol_t* symlist = Lexer_GetSym(line);
+	ParserNode_t* parseTree = Parser_Parse(symlist);
+
+	ASSERT((parseTree == NULL), ASSERTMSG_INT_FAIL(NULL, parseTree));
 }
