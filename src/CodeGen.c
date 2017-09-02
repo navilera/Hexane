@@ -39,6 +39,7 @@ static void compiler(ParserNode_t* parseNode)
 		compiler(parseNode->child2);
 		addObjCode(Code_Str);
 		addObjName(parseNode->child1->name);
+		addObjCode(Code_Pop);
 		break;
 	case BNF_mul:
 		compiler(parseNode->child1);
@@ -70,7 +71,7 @@ static void compiler(ParserNode_t* parseNode)
 		addObjName(parseNode->name);
 		break;
 	case BNF_const:
-		addObjCode(Code_Mov);
+		addObjCode(Code_Push);
 		addObjVal(parseNode->val);
 		break;
 	case NumberOfBnfs: break;
