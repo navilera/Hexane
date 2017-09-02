@@ -10,7 +10,7 @@
 #include "Main.h"
 #include "Lexer.h"
 
-static char* suiteName = "Lexer Test";
+static char* suiteName = "01 Lexer Test";
 
 static uint64_t GetSerialize(Symbol_t* symlist)
 {

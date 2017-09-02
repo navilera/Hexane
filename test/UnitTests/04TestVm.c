@@ -15,7 +15,7 @@
 #include "CodeGen.h"
 #include "VirtualMachine.h"
 
-REGISTER_SUITE_AUTO(VMTest, "Virtual Machine Test")
+REGISTER_SUITE_AUTO(VMTest, "04 Virtual Machine Test")
 
 
 static uint64_t* common(char* line, uint64_t expect)

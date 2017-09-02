@@ -12,7 +12,7 @@
 #include "Lexer.h"
 #include "Parser.h"
 
-REGISTER_SUITE_AUTO(ParserTest, "Parser Test")
+REGISTER_SUITE_AUTO(ParserTest, "02 Parser Test")
 
 #if 0
 PRE_TEST_BEGIN()

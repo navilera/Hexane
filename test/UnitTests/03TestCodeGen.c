@@ -12,7 +12,7 @@
 #include "Parser.h"
 #include "CodeGen.h"
 
-REGISTER_SUITE_AUTO(CodeGenTest, "Code Generator Test")
+REGISTER_SUITE_AUTO(CodeGenTest, "03 Code Generator Test")
 
 #define BUFLEN 1024
 static char actualBuf[BUFLEN];

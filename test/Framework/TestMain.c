@@ -3,9 +3,10 @@
 TestUnit_t testUnit = {0};
 
 
-static void InitTestUnit(void);
+static void InitTestUnit(void);void SortTestSuite(void);
 static void RunTest(void);
 static void ReportTestResult(void);
+void SortTestSuite(void);
 
 static uint32_t BeautiPrint_GetLongestNameLen(TestCase_t* testCasePtr);
 static void BeautiPrint_GetCurrentPadLen(char* name, int maxLen);
@@ -13,6 +14,7 @@ static void BeautiPrint_GetCurrentPadLen(char* name, int maxLen);
 int main(int argc, char* argv[])
 {
     InitTestUnit();
+    SortTestSuite();
     RunTest();
     ReportTestResult();
 
@@ -24,6 +26,44 @@ void AddTestSuite(TestSuite_t* testSuite)
     // Add to head
     testSuite->next = testUnit.testSuitsList;
     testUnit.testSuitsList = testSuite;
+}
+
+void SortTestSuite(void)
+{
+	TestSuite_t* testSuitePtr;
+
+	TestSuite_t* temp = (TestSuite_t*)malloc(sizeof(TestSuite_t));
+
+	while(true)
+	{
+		bool doChange;
+		testSuitePtr = testUnit.testSuitsList;
+
+		while(testSuitePtr->next)
+		{
+			doChange = false;
+			if(strncmp(testSuitePtr->name, testSuitePtr->next->name, 2) > 0)
+			{
+				TestSuite_t* tempNext;
+				doChange = true;
+				memcpy(temp, testSuitePtr->next, sizeof(TestSuite_t));
+				temp->next = testSuitePtr->next;
+				tempNext = testSuitePtr->next->next;
+				memcpy(testSuitePtr->next, testSuitePtr, sizeof(TestSuite_t));
+				memcpy(testSuitePtr, temp, sizeof(TestSuite_t));
+				testSuitePtr->next->next = tempNext;
+
+			}
+			testSuitePtr = testSuitePtr->next;
+		}
+
+		if(doChange == false)
+		{
+			break;
+		}
+	}
+
+	free(temp);
 }
 
 TestCase_t* MakeTestCase(TestCaseFunc_t testFunc, char* name)
