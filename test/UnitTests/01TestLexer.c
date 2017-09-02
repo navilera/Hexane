@@ -42,6 +42,14 @@ static bool GetSymTest00(void)
 	return Common(line, expect);
 }
 
+static bool GetSymTest_term(void)
+{
+	char* line = "$akaslgl\n";
+	Symbol_t expect[4] = {SYM_ID, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
 static bool GetSymTest01(void)
 {
 	char* line = "$akaslgl30230203 c0ffee 23849\n";
@@ -159,6 +167,7 @@ static void Init(TestSuite_t* suite)
 
     AddTestCase(suite, GetSymTest00, "GetSym Test01");
     AddTestCase(suite, GetSymTest01, "GetSym Test02");
+    AddTestCase(suite, GetSymTest_term, "only term name");
     AddTestCase(suite, GetSymTest02, "GetSym Test [invalid token01]");
     AddTestCase(suite, GetSymTest03, "GetSym Test [numeric variable name]");
     AddTestCase(suite, GetSymTest04, "GetSym Test [invalid token02]");
@@ -173,5 +182,5 @@ static void Init(TestSuite_t* suite)
     AddTestCase(suite, GetSymTest13, "GetSym Test [complex token]");
 }
 
-REGISTER_SUITE_FUNC(ShellTest, Init)
+REGISTER_SUITE_FUNC(LexerTest, Init)
 

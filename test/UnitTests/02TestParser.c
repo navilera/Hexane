@@ -100,28 +100,43 @@ static bool commonTestName(char* line, char* testName, int* targetDepth)
 TESTCASE(simpleTerm, "Simple Term test")
 {
 	char* line = "c0FFee\n";
-	int depth[2] = {1,0};
+	int depth[30] = {1,0};
 	return commonTestType(line, BNF_const, depth);
+}
+
+TESTCASE(simpleTermName01, "Simple Term name test01")
+{
+	char* line = "$aadke\n";
+	int depth[30] = {1, 0};
+	return commonTestType(line, BNF_var, depth);
+}
+
+
+TESTCASE(simpleTermName02, "Simple Term name test02")
+{
+	char* line = "$aadke/200\n";
+	int depth[30] = {1, 0};
+	return commonTestType(line, BNF_div, depth);
 }
 
 TESTCASE(simpleTermVal, "Simple Term value test")
 {
 	char* line = "c0FFee\n";
-	int depth[2] = {1,0};
+	int depth[30] = {1,0};
 	return commonTestVal(line, 0xc0ffee, depth);
 }
 
 TESTCASE(simpleExprTest_add, "Simple Expression Test Add")
 {
 	char* line = "c0ffee + 15\n";
-	int depth[2] = {1,0};
+	int depth[30] = {1,0};
 	return commonTestType(line, BNF_add, depth);
 }
 
 TESTCASE(simpleExprTest_addVal, "Simple Expression Test Add Value")
 {
 	char* line = "c0ffee + 15\n";
-	int depth[3] = {1, 2, 0};
+	int depth[30] = {1, 2, 0};
 	return commonTestVal(line, 0x15, depth);
 }
 
