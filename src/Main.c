@@ -10,6 +10,7 @@
 #include "Lexer.h"
 #include "Parser.h"
 #include "CodeGen.h"
+#include "VirtualMachine.h"
 
 static bool checkInvalidSymbol(Symbol_t* symlist, const char* line);
 
@@ -35,15 +36,24 @@ int main(int argc, char* argv[])
 		}
 
 		uint64_t* codelist = CodeGen_Compile(parseTree);
-		for(int i = 0 ; i < 1024 ; ++i)
+		if(codelist == NULL)
 		{
-			if(codelist[i] == (uint64_t)Code_Halt)
-			{
-				break;
-			}
-			printf("%lx ", codelist[i]);
+			printf("Compile error\n");
+			continue;
 		}
-		printf("\n");
+
+		uint64_t* sp = Vm_Run(codelist);
+		if(codelist == NULL)
+		{
+			printf("VM error\n");
+			printf("%s\n", Vm_GetErrorMsg());
+			continue;
+		}
+
+		if(!Vm_IsStackEmpty(sp))
+		{
+			printf("%lx\n", Vm_GetStackValue(sp));
+		}
 	}
 
 	return 0;
