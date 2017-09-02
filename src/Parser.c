@@ -124,32 +124,20 @@ static ParserNode_t* statement(void)
 {
 	ParserNode_t* nodeStatement;
 
-	if(*symCurrent != SYM_ID)
+	nodeStatement = expr();
+	CHK_SYNERR_RETURN;
+
+	if(*symCurrent == SYM_EQU)
 	{
-		nodeStatement = expr();
-		CHK_SYNERR_RETURN;
-	}
-	else
-	{
-		nodeStatement = newNode(BNF_assign);
-		char* variableName = getSymIdName();
+		ParserNode_t* nodeAssign = newNode(BNF_assign);
+		nodeAssign->child1 = nodeStatement;
+
 		symCurrent++;
-		if(*symCurrent == SYM_EQU)
-		{
-			ParserNode_t* nodeId = newNode(BNF_var);
-			nodeId->name = variableName;
-			nodeStatement->child1 = nodeId;
 
-			symCurrent++;
+		nodeAssign->child2 = expr();
+		CHK_SYNERR_RETURN;
 
-			nodeStatement->child2 = expr();
-
-			CHK_SYNERR_RETURN;
-		}
-		else
-		{
-			SYNERR_RETURN;
-		}
+		nodeStatement = nodeAssign;
 	}
 
 	return nodeStatement;
