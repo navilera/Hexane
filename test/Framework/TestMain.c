@@ -32,38 +32,45 @@ void SortTestSuite(void)
 {
 	TestSuite_t* testSuitePtr;
 
-	TestSuite_t* temp = (TestSuite_t*)malloc(sizeof(TestSuite_t));
-
 	while(true)
 	{
 		bool doChange;
 		testSuitePtr = testUnit.testSuitsList;
 
+		TestSuite_t* preSuitePtr = NULL;
 		while(testSuitePtr->next)
 		{
 			doChange = false;
+
 			if(strncmp(testSuitePtr->name, testSuitePtr->next->name, 2) > 0)
 			{
-				TestSuite_t* tempNext;
 				doChange = true;
-				memcpy(temp, testSuitePtr->next, sizeof(TestSuite_t));
-				temp->next = testSuitePtr->next;
-				tempNext = testSuitePtr->next->next;
-				memcpy(testSuitePtr->next, testSuitePtr, sizeof(TestSuite_t));
-				memcpy(testSuitePtr, temp, sizeof(TestSuite_t));
-				testSuitePtr->next->next = tempNext;
 
+				TestSuite_t* tA = testSuitePtr;
+				TestSuite_t* tB = testSuitePtr->next;
+
+				if(preSuitePtr == NULL)
+				{
+					testUnit.testSuitsList = tB;
+				}
+				else
+				{
+					preSuitePtr->next = tB;
+				}
+				tA->next = tB->next;
+				tB->next = tA;
 			}
+
+			preSuitePtr = testSuitePtr;
 			testSuitePtr = testSuitePtr->next;
 		}
+
 
 		if(doChange == false)
 		{
 			break;
 		}
 	}
-
-	free(temp);
 }
 
 TestCase_t* MakeTestCase(TestCaseFunc_t testFunc, char* name)
