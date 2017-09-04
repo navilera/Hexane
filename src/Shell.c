@@ -10,6 +10,7 @@
 
 #include <unistd.h>
 #include <termios.h>
+#include <sys/types.h>
 
 static ShellCmdHistory_t* cmdHistory = NULL;
 static ShellCmdHistory_t* lastHistory = NULL;
@@ -25,30 +26,31 @@ static void inArrayAdjustment(int pos, bool del_ins, char ch);
 #define BACKSPACE '\177'
 #define DELETE '~'
 
-static void debuglinebuf(void)
-{
-	printf("DD");
-	for(int i = 0 ; i < 16 ; i++)
-	{
-		printf(" %02x|", lineBuffer[i]);
-	}
-	printf("\n");
-}
+#define SH_LEFTARROW "\10"
+#define SH_RIGHTARROW "\33[C"
+#define SH_BACKSPACE "\10\33[1P"
+#define SH_DELETE "\33[1P"
 
 char* Shell_GetLine(void)
 {
 	fputs(SHELL_PROMPT, stdout);
 	memset(lineBuffer, 0, sizeof(lineBuffer));
 
-	//lineBufStartIdx = strlen(lineBuffer);
-
-	//fgets(&lineBuffer[lineBufStartIdx], sizeof(lineBuffer), stdin);
 	keyBoardControl();
 	addCmdHistory();
 
-	debuglinebuf();
-
 	return lineBuffer;
+}
+
+static void clearPrompt(void)
+{
+	write(1, "\r", 1);
+	for(int i = 0 ; i < SHELL_LINE_LEN_LIMIT ; i++)
+	{
+		// delete current input line
+		write(1, SH_DELETE, 4);
+	}
+	write(1, SHELL_PROMPT, 3);
 }
 
 static void keyBoardControl(void)
@@ -65,6 +67,7 @@ static void keyBoardControl(void)
 
 	termios_p.c_lflag &= ~(ICANON|ECHO);
 	tcsetattr(0,TCSANOW, &termios_p);
+
 	char buff;
 	while(read(0, &buff, 1) >= 0)
 	{
@@ -78,70 +81,70 @@ static void keyBoardControl(void)
 				read(0, &buff, 1);
 				if(buff == 'A')
 				{
+					// Arrow Up
 					history = getHistory('A');
 				}
 				else if(buff == 'B')
 				{
+					// Arrow Down
 					history = getHistory('B');
 				}
 				else if(buff == 'C')
 				{
+					// Arrow Right
 					if(currentCursor < lineBufferLen)
 					{
-						write(2, "\33[C", 3);
+						write(1, SH_RIGHTARROW, 3);
 						currentCursor++;
 					}
 				}
 				else if(buff == 'D')
 				{
+					// Arrow Left
 					if(currentCursor > 0)
 					{
-						write(2, "\10", 2);
+						write(1, SH_LEFTARROW, 2);
 						currentCursor--;
 					}
 				}
 
 				if(history != NULL)
 				{
-					if(lineBufferLen > 0)
-					{
-						while(lineBufferLen--)
-						{
-							// delete current input line
-							write(2, "\10\33[1P", 5);
-						}
-					}
-					//write(2, "\10\33[1P", 5); // current cursor position
+					// clear current input
+					clearPrompt();
 					memset(lineBuffer, 0, SHELL_LINE_LEN_LIMIT);
 					lineBufferLen = 0;
-					for(char* ch = history ; *ch != '\0' ; ch++)
-					{
-						write(2,ch,1);
-						lineBuffer[lineBufferLen++] = *ch;
-						currentCursor = lineBufferLen;
-					}
+
+					// replace current input to history
+					strncpy(lineBuffer, history, strlen(history));
+					lineBufferLen = strlen(history);
+					currentCursor = lineBufferLen;
+
+					// show display
+					write(1, lineBuffer, lineBufferLen);
 				}
 			}
 			else if(buff == BACKSPACE)
 			{
 				if(currentCursor > 0)
 				{
-					write(2, "\10\33[1P", 5);
+					write(1, SH_BACKSPACE, 5);
 					inArrayAdjustment(--currentCursor, true, 0);
 					lineBufferLen--;
 				}
 			}
 			else if(buff == DELETE)
 			{
-				write(2, "\33[1P", 4);
+				write(1, SH_DELETE, 4);
 				inArrayAdjustment(currentCursor, true, 0);
 				lineBufferLen--;
 			}
 			else
 			{
-				write(2,&buff,1);
+				write(1,&buff,1);
 				if((buff == '\n') || (currentCursor == lineBufferLen))
 				{
+					// add input character into end of line buffer
 					lineBuffer[lineBufferLen++] = buff;
 					currentCursor = lineBufferLen;
 				}
@@ -149,8 +152,20 @@ static void keyBoardControl(void)
 				{
 					if(buff != '\n')
 					{
-						inArrayAdjustment(currentCursor, false, buff);
+						// add input character into middle of line buffer
+						inArrayAdjustment(currentCursor++, false, buff);
 						lineBufferLen++;
+
+						// clear current input
+						clearPrompt();
+
+						// show updated line buffer
+						write(1, lineBuffer, lineBufferLen);
+
+						// adjust current cursor position
+						write(1, "\r", 1);
+						write(1, SHELL_PROMPT, 3);
+						for(int i = 0 ; i < currentCursor ; i++) write(1, SH_RIGHTARROW, 3);
 					}
 				}
 			}
@@ -184,6 +199,7 @@ static void inArrayAdjustment(int pos, bool del_ins, char ch)
 		lineBuffer[pos] = ch;
 	}
 }
+
 
 static void addCmdHistory(void)
 {
