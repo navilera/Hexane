@@ -164,7 +164,7 @@ static bool GetSymTest13(void)
 static bool GetSymTest14(void)
 {
 	char* line = "$akaslgl30230203 c0ffee 23849 u33232\n";
-	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_INT, SYM_DEC, SYM_NOSYM};
+	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_NOSYM};
 
 	return Common(line, expect);
 }
@@ -196,7 +196,7 @@ static bool GetSymTest17(void)
 static bool GetSymTest18(void)
 {
 	char* line = "$akaslgl30230203 c0ffee AAA u33232 88888\n";
-	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_INT, SYM_DEC, SYM_INT, SYM_NOSYM};
+	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_INT, SYM_NOSYM};
 
 	return Common(line, expect);
 }
@@ -220,7 +220,7 @@ static bool GetSymTest20(void)
 static bool GetSymTest21(void)
 {
 	char* line = "$akaslgl30230203 c0ffee AAA U33232 88888\n";
-	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_INT, SYM_DEC, SYM_INT, SYM_NOSYM};
+	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_INT, SYM_NOSYM};
 
 	return Common(line, expect);
 }

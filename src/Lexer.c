@@ -119,7 +119,7 @@ Symbol_t* Lexer_GetSym(char* line)
 			if(getDecInt(&ch, &intVal))
 			{
 				intValBuffer[index] = intVal;
-				symbolBuffer[index] = SYM_DEC;
+				symbolBuffer[index] = SYM_INT;
 				++index;
 			}
 			else
@@ -265,7 +265,7 @@ static bool getId(char** chBack, char** idSymStr)
 
 static bool cancelPrevSymbol(int index, char* ch, char* line)
 {
-	if(symbolBuffer[index-1] == SYM_INT || symbolBuffer[index-1] == SYM_DEC)
+	if(symbolBuffer[index-1] == SYM_INT)
 	{
 		// cancel in this case
 		// 390acd0adskw
