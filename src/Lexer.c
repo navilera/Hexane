@@ -11,6 +11,7 @@
 /*
  * SYM_INT	[0-9a-fA-F]+	// default integer is hex value
  * SYM_ID	$[0-9a-zA-z_]+
+ * SYM_DEC	[uU][0-9]
  * SYM_COL 	:
  * SYM_DOT	.
  * SYM_LPAR (
@@ -33,6 +34,7 @@ static char		idSymBuffer[LEX_ID_SYM_LEN];
 static void initAllSymbolBuffer(void);
 
 static bool getHexInt(char** chBack, uint64_t* intValBack);
+static bool getDecInt(char** chBack, uint64_t* intValBack);
 static bool getId(char** chBack, char** idSymStr);
 static bool cancelPrevSymbol(int index, char* ch, char* line);
 static void setError(int index, char* ch, char* line);
@@ -71,11 +73,20 @@ Symbol_t* Lexer_GetSym(char* line)
 		{
 			return symbolBuffer;
 		}
-		else if(getHexInt(&ch, &intVal))
+		else if((*ch >= '0' && *ch <= '9') || (*ch >= 'a' && *ch <= 'f') || (*ch >= 'A' && *ch <= 'F'))
 		{
-			intValBuffer[index] = intVal;
-			symbolBuffer[index] = SYM_INT;
-			++index;
+			// cancel previous symbol if invalid token happens
+			if(cancelPrevSymbol(index, ch, line))
+			{
+				return symbolBuffer;
+			}
+
+			if(getHexInt(&ch, &intVal))
+			{
+				intValBuffer[index] = intVal;
+				symbolBuffer[index] = SYM_INT;
+				++index;
+			}
 		}
 		else if(*ch == '$')
 		{
@@ -89,6 +100,26 @@ Symbol_t* Lexer_GetSym(char* line)
 			{
 				idNameBuffer[index] = idSymStr;
 				symbolBuffer[index] = SYM_ID;
+				++index;
+			}
+			else
+			{
+				setError(index, ch, line);
+				return symbolBuffer;
+			}
+		}
+		else if(*ch == 'u' || *ch == 'U')
+		{
+			// cancel previous symbol if invalid token happens
+			if(cancelPrevSymbol(index, ch, line))
+			{
+				return symbolBuffer;
+			}
+
+			if(getDecInt(&ch, &intVal))
+			{
+				intValBuffer[index] = intVal;
+				symbolBuffer[index] = SYM_DEC;
 				++index;
 			}
 			else
@@ -179,6 +210,29 @@ static bool getHexInt(char** chBack, uint64_t* intValBack)
 	return false;
 }
 
+static bool getDecInt(char** chBack, uint64_t* intValBack)
+{
+	uint64_t intVal = 0;
+	char* ch = *chBack;
+
+	*intValBack = 0;
+
+	++ch;
+
+	if((*ch >= '0' && *ch <= '9'))
+	{
+		while((*ch >= '0' && *ch <= '9'))
+		{
+			intVal = (uint64_t)((intVal * 10) + (*ch - '0'));
+			++ch;
+		}
+		*intValBack = intVal;
+		*chBack = ch;
+		return true;
+	}
+	return false;
+}
+
 static bool getId(char** chBack, char** idSymStr)
 {
 	char* ch = *chBack;
@@ -211,7 +265,7 @@ static bool getId(char** chBack, char** idSymStr)
 
 static bool cancelPrevSymbol(int index, char* ch, char* line)
 {
-	if(symbolBuffer[index-1] == SYM_INT)
+	if(symbolBuffer[index-1] == SYM_INT || symbolBuffer[index-1] == SYM_DEC)
 	{
 		// cancel in this case
 		// 390acd0adskw

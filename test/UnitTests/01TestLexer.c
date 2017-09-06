@@ -161,6 +161,70 @@ static bool GetSymTest13(void)
 	return Common(line, expect);
 }
 
+static bool GetSymTest14(void)
+{
+	char* line = "$akaslgl30230203 c0ffee 23849 u33232\n";
+	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_INT, SYM_DEC, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool GetSymTest15(void)
+{
+	char* line = "$akaslgl30230203 c0ffee 23849u33232\n";
+	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_ERR, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool GetSymTest16(void)
+{
+	char* line = "$akaslgl30230203 c0ffee u33232$ioi 88888\n";
+	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_ERR, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool GetSymTest17(void)
+{
+	char* line = "$akaslgl30230203 c0ffee AAAu33232 88888\n";
+	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_ERR, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool GetSymTest18(void)
+{
+	char* line = "$akaslgl30230203 c0ffee AAA u33232 88888\n";
+	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_INT, SYM_DEC, SYM_INT, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool GetSymTest19(void)
+{
+	char* line = "$akaslgl30230203 c0ffee $ioiu332 88888\n";
+	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_ID, SYM_INT, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool GetSymTest20(void)
+{
+	char* line = "$akaslgl30230203 88888 u332c0ffee\n";
+	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_ERR, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool GetSymTest21(void)
+{
+	char* line = "$akaslgl30230203 c0ffee AAA U33232 88888\n";
+	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_INT, SYM_DEC, SYM_INT, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
 static void Init(TestSuite_t* suite)
 {
     suite->name = suiteName;
@@ -180,6 +244,14 @@ static void Init(TestSuite_t* suite)
     AddTestCase(suite, GetSymTest11, "GetSym Test [mixed space]");
     AddTestCase(suite, GetSymTest12, "GetSym Test [mixed token]");
     AddTestCase(suite, GetSymTest13, "GetSym Test [complex token]");
+    AddTestCase(suite, GetSymTest14, "GetSym Test [Dec01]");
+    AddTestCase(suite, GetSymTest15, "GetSym Test [Dec err00]");
+    AddTestCase(suite, GetSymTest16, "GetSym Test [Dec err01]");
+    AddTestCase(suite, GetSymTest17, "GetSym Test [Dec err02]");
+    AddTestCase(suite, GetSymTest18, "GetSym Test [Dec02]");
+    AddTestCase(suite, GetSymTest19, "GetSym Test [Dec03]");
+    AddTestCase(suite, GetSymTest20, "GetSym Test [Dec err03]");
+    AddTestCase(suite, GetSymTest21, "GetSym Test [Dec04]");
 }
 
 REGISTER_SUITE_FUNC(LexerTest, Init)

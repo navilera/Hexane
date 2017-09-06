@@ -11,6 +11,7 @@
 typedef enum {
 	SYM_NOSYM = 0,
 	SYM_INT,
+	SYM_DEC,
 	SYM_ID,
 	SYM_COL,
 	SYM_DOT,
