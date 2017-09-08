@@ -17,10 +17,11 @@ typedef struct _vm_symbol_table_t_
 #define VM_SYMTBLNUM		1024
 #define VM_STACKSIZE		2048
 #define VM_ERRSTRLEN		1024
+#define VM_RETSTRLEN		1024
 
 uint64_t* Vm_Run(uint64_t* code);
 bool Vm_IsStackEmpty(uint64_t* sp);
-uint64_t Vm_GetStackValue(uint64_t* sp);
+char* Vm_GetStackValue(uint64_t* sp);
 char* Vm_GetErrorMsg(void);
 
 #define VM_ERR_critical_error			"Critical Error!!!"

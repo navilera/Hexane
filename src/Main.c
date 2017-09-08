@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
 
 		if(!Vm_IsStackEmpty(sp))
 		{
-			printf("%lx\n", Vm_GetStackValue(sp));
+			printf("%s\n", Vm_GetStackValue(sp));
 		}
 	}
 

@@ -15,6 +15,7 @@ VmSymbolTable_t symbolTable[VM_SYMTBLNUM] = {0};
 uint64_t stack[VM_STACKSIZE];
 
 static char errorMessage[VM_ERRSTRLEN];
+static char resultStr[VM_RETSTRLEN];
 
 static bool storeSymbolTable(char* name, uint64_t val);
 static uint64_t loadSymbolTable(char* name);
@@ -92,9 +93,11 @@ bool Vm_IsStackEmpty(uint64_t* sp)
 	return (sp == stack);
 }
 
-uint64_t Vm_GetStackValue(uint64_t* sp)
+char* Vm_GetStackValue(uint64_t* sp)
 {
-	return *(sp - 1);
+	uint64_t ret = *(sp - 1);
+	sprintf(resultStr, "%lx", ret);
+	return resultStr;
 }
 
 char* Vm_GetErrorMsg(void)
