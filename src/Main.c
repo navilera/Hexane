@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
 		}
 
 		uint64_t* sp = Vm_Run(codelist);
-		if(codelist == NULL)
+		if(sp == NULL)
 		{
 			printf("VM error\n");
 			printf("%s\n", Vm_GetErrorMsg());
