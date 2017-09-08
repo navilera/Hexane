@@ -12,26 +12,29 @@
 
 static char* suiteName = "01 Lexer Test";
 
-static uint64_t GetSerialize(Symbol_t* symlist)
+#define BUFLEN 1024
+static char actualBuf[BUFLEN];
+static char expectBuf[BUFLEN];
+
+static void serialize(Symbol_t* symlist, char* target_out)
 {
-	uint64_t result = 0;
+	char temp[64] = {0};
+	memset(target_out, 0, BUFLEN);
 	for(Symbol_t *sym = symlist; *sym != SYM_NOSYM ; ++sym)
 	{
-		result <<= 4;
-		result |= ((uint64_t)*sym) & 0xF;
+		sprintf(temp, "%02x,", (uint32_t)((*sym) & 0xFF));
+		strcat(target_out, temp);
 	}
-
-	return result;
 }
 
 static bool Common(char* line, Symbol_t* expect)
 {
 	Symbol_t* symlist = Lexer_GetSym(line);
 
-	uint64_t serializeActual = GetSerialize(symlist);
-	uint64_t serializeExpect = GetSerialize(expect);
+	serialize(symlist, actualBuf);
+	serialize(expect, expectBuf);
 
-	ASSERT((serializeExpect == serializeActual), ASSERTMSG_INT_FAIL(serializeExpect, serializeActual));
+	ASSERT(ASSERT_CMPSTR(expectBuf, actualBuf), ASSERTMSG_STR_FAIL(expectBuf, actualBuf));
 }
 
 static bool GetSymTest00(void)
