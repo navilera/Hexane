@@ -235,23 +235,30 @@ TESTCASE(syntaxError02, "Syntax Error Test02")
 	ASSERT((parseTree == NULL), ASSERTMSG_INT_FAIL(NULL, parseTree));
 }
 
-TESTCASE(complexExprTest_str01, "String test01")
+TESTCASE(stringExprTest_str01, "String test01")
 {
 	char* line = "\"aslg923lkd\"\n";
 	int depth[30] = {1, 0};
 	return commonTestType(line, BNF_str, depth);
 }
 
-TESTCASE(complexExprTest_str02, "String test01")
+TESTCASE(stringExprTest_str02, "String test01")
 {
 	char* line = "$ssr = \"aslg923lkd\"\n";
 	int depth[30] = {1, 2, 0};
 	return commonTestType(line, BNF_str, depth);
 }
 
-TESTCASE(complexExprTest_str03, "String test03")
+TESTCASE(stringExprTest_str03, "String test03")
 {
 	char* line = "\"aslg923lkd\"\n";
 	int depth[30] = {1, 0};
+	return commonTestName(line, "aslg923lkd", depth);
+}
+
+TESTCASE(stringExprTest_str04, "String test04")
+{
+	char* line = "$ssr = \"aslg923lkd\"\n";
+	int depth[30] = {1, 2, 0};
 	return commonTestName(line, "aslg923lkd", depth);
 }

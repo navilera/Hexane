@@ -64,7 +64,12 @@ static bool common(char* line, uint64_t* expectlist)
 	{
 		expectCode[i].val = expectlist[i];
 
-		if(expectlist[i] == Code_Str || expectlist[i] == Code_Ldr || enablePushStr)
+		if(expectlist[i] == Code_Str || expectlist[i] == Code_Ldr)
+		{
+			expectCode[i+1].type = CodeType_Str;
+		}
+
+		if(expectlist[i] == Code_Push && enablePushStr)
 		{
 			expectCode[i+1].type = CodeType_Str;
 		}
@@ -128,6 +133,14 @@ TESTCASE(codegenStr, "String")
 {
 	char* line = "\"asdlkgjearh4x\"\n";
 	uint64_t expect[64] = {ENABLE_PUSH_STR, Code_Push, (uint64_t)"asdlkgjearh4x", Code_Halt, 0};
+
+	return common(line, expect);
+}
+
+TESTCASE(codegenStr01, "String01")
+{
+	char* line = "$kkkk = \"asdlkgjearh4x\"\n";
+	uint64_t expect[64] = {ENABLE_PUSH_STR, Code_Push, (uint64_t)"asdlkgjearh4x", Code_Str, (uint64_t)"kkkk", Code_Pop, Code_Halt, 0};
 
 	return common(line, expect);
 }

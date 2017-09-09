@@ -8,10 +8,23 @@
 #ifndef SRC_VIRTUALMACHINE_H_
 #define SRC_VIRTUALMACHINE_H_
 
+typedef enum {
+	VmStackType_Addr,
+	VmStackType_Int,
+	VmStackType_Str,
+	NumberOfVmStackType
+} VmStackType_t;
+
+typedef struct _vm_stack_t_
+{
+	uint64_t val;
+	VmStackType_t type;
+} VmStack_t;
+
 typedef struct _vm_symbol_table_t_
 {
 	char* 		name;
-	uint64_t 	val;
+	VmStack_t 	val;
 } VmSymbolTable_t;
 
 #define VM_SYMTBLNUM		1024
@@ -19,9 +32,9 @@ typedef struct _vm_symbol_table_t_
 #define VM_ERRSTRLEN		1024
 #define VM_RETSTRLEN		1024
 
-uint64_t* Vm_Run(CodegenList_t* code);
-bool Vm_IsStackEmpty(uint64_t* sp);
-char* Vm_GetStackValue(uint64_t* sp);
+VmStack_t* Vm_Run(CodegenList_t* code);
+bool Vm_IsStackEmpty(VmStack_t* sp);
+char* Vm_GetStackValue(VmStack_t* sp);
 char* Vm_GetErrorMsg(void);
 
 #define VM_ERR_critical_error			"Critical Error!!!"

@@ -11,24 +11,23 @@
 #include "CodeGen.h"
 #include "VirtualMachine.h"
 
-VmSymbolTable_t symbolTable[VM_SYMTBLNUM] = {0};
-uint64_t stack[VM_STACKSIZE];
+static VmSymbolTable_t symbolTable[VM_SYMTBLNUM] = {0};
+static VmStack_t stack[VM_STACKSIZE];
 
 static char errorMessage[VM_ERRSTRLEN];
 static char resultStr[VM_RETSTRLEN];
 
-static bool storeSymbolTable(char* name, uint64_t val);
-static uint64_t loadSymbolTable(char* name);
-static bool isExistSymbolTable(char* name);
+static bool storeSymbolTable(char* name, VmStack_t spval);
+static int loadSymbolTable(char* name, VmStack_t* spval_out);
 static void errorMsg(char* errMsg);
 
 
-uint64_t* Vm_Run(CodegenList_t* code)
+VmStack_t* Vm_Run(CodegenList_t* code)
 {
 	memset(stack, 0, VM_STACKSIZE);
 	memset(errorMessage, 0, VM_ERRSTRLEN);
 
-	uint64_t* sp = stack;
+	VmStack_t* sp = stack;
 	CodegenList_t* pc = code;
 
 	while(true)
@@ -47,38 +46,37 @@ uint64_t* Vm_Run(CodegenList_t* code)
 			pc++;
 			break;
 		case Code_Ldr:
-			if(isExistSymbolTable((char*)pc->val))
-			{
-				*sp++ = loadSymbolTable((char*)pc->val);
-				pc++;
-			}
-			else
+			if(loadSymbolTable((char*)pc->val, sp) == -1)
 			{
 				errorMsg(VM_ERR_Invalid_variable);
 				return NULL;	// error
 			}
+			sp++;
+			pc++;
 			break;
 		case Code_Push:
-			*sp++ = pc->val;
+			sp->val = pc->val;
+			sp->type = (pc->type == CodeType_Int) ? VmStackType_Int : VmStackType_Str;
+			sp++;
 			pc++;
 			break;
 		case Code_Pop:
 			--sp;
 			break;
 		case Code_Add:
-			sp[-2] = sp[-2] + sp[-1]; --sp;
+			sp[-2].val = sp[-2].val + sp[-1].val; --sp;
 			break;
 		case Code_Sub:
-			sp[-2] = sp[-2] - sp[-1]; --sp;
+			sp[-2].val = sp[-2].val - sp[-1].val; --sp;
 			break;
 		case Code_Mul:
-			sp[-2] = sp[-2] * sp[-1]; --sp;
+			sp[-2].val = sp[-2].val * sp[-1].val; --sp;
 			break;
 		case Code_Div:
-			sp[-2] = sp[-2] / sp[-1]; --sp;
+			sp[-2].val = sp[-2].val / sp[-1].val; --sp;
 			break;
 		case Code_Mod:
-			sp[-2] = sp[-2] % sp[-1]; --sp;
+			sp[-2].val = sp[-2].val % sp[-1].val; --sp;
 			break;
 		case Code_Halt:
 			return sp;
@@ -94,15 +92,22 @@ uint64_t* Vm_Run(CodegenList_t* code)
 	return NULL;
 }
 
-bool Vm_IsStackEmpty(uint64_t* sp)
+bool Vm_IsStackEmpty(VmStack_t* sp)
 {
 	return (sp == stack);
 }
 
-char* Vm_GetStackValue(uint64_t* sp)
+char* Vm_GetStackValue(VmStack_t* sp)
 {
-	uint64_t ret = *(sp - 1);
-	sprintf(resultStr, "%lx", ret);
+	VmStack_t ret = *(sp - 1);
+	if(ret.type == VmStackType_Int)
+	{
+		sprintf(resultStr, "%lx", ret.val);
+	}
+	else if(ret.type == VmStackType_Str)
+	{
+		sprintf(resultStr, "\"%s\"", (char*)ret.val);
+	}
 	return resultStr;
 }
 
@@ -116,22 +121,54 @@ static void errorMsg(char* errMsg)
 	strncpy(errorMessage, errMsg, strlen(errMsg));
 }
 
-static bool storeSymbolTable(char* name, uint64_t val)
+static bool storeSymbolTable(char* name, VmStack_t spval)
 {
+	VmStack_t temp;
+	int index = 0;
+	if((index = loadSymbolTable(name, &temp)) != -1)
+	{
+		symbolTable[index].val.type = spval.type;
+
+		if(spval.type == VmStackType_Str)
+		{
+			symbolTable[index].val.val = (uint64_t)(char*)malloc(strlen((char*)spval.val) + 1);
+			memset((void*)(symbolTable[index].val.val), 0, strlen((char*)spval.val) + 1);
+			strncpy((char*)(symbolTable[index].val.val), (char*)(spval.val), strlen((char*)spval.val));
+		}
+		else
+		{
+			symbolTable[index].val.val = spval.val;
+		}
+		return true;
+	}
+
 	for(int i = 0 ; i < VM_SYMTBLNUM ; ++i)
 	{
 		if(symbolTable[i].name == NULL)
 		{
-			symbolTable[i].name = (char*)malloc(sizeof(name));
+			symbolTable[i].name = (char*)malloc(strlen(name) + 1);
+			memset(symbolTable[i].name, 0, strlen(name) + 1);
 			strncpy(symbolTable[i].name, name, strlen(name));
-			symbolTable[i].val = val;
+
+			symbolTable[i].val.type = spval.type;
+
+			if(spval.type == VmStackType_Str)
+			{
+				symbolTable[i].val.val = (uint64_t)(char*)malloc(strlen((char*)spval.val) + 1);
+				memset((void*)(symbolTable[i].val.val), 0, strlen((char*)spval.val) + 1);
+				strncpy((char*)(symbolTable[i].val.val), (char*)(spval.val), strlen((char*)spval.val));
+			}
+			else
+			{
+				symbolTable[i].val.val = spval.val;
+			}
 			return true;
 		}
 	}
 	return false;
 }
 
-static uint64_t loadSymbolTable(char* name)
+static int loadSymbolTable(char* name, VmStack_t* spval_out)
 {
 	for(int i = 0 ; i < VM_SYMTBLNUM ; ++i)
 	{
@@ -139,26 +176,12 @@ static uint64_t loadSymbolTable(char* name)
 		{
 			if((strncmp(symbolTable[i].name, name, strlen(name)) == 0) && (strlen(symbolTable[i].name) == strlen(name)))
 			{
-				return symbolTable[i].val;
+				*spval_out = symbolTable[i].val;
+				return i;
 			}
 		}
 	}
 
-	return 0;
+	return (-1);
 }
 
-static bool isExistSymbolTable(char* name)
-{
-	for(int i = 0 ; i < VM_SYMTBLNUM ; ++i)
-	{
-		if(symbolTable[i].name != NULL)
-		{
-			if((strncmp(symbolTable[i].name, name, strlen(name)) == 0) && (strlen(symbolTable[i].name) == strlen(name)))
-			{
-				return true;
-			}
-		}
-	}
-
-	return false;
-}

@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 			continue;
 		}
 
-		uint64_t* sp = Vm_Run(codelist);
+		VmStack_t* sp = Vm_Run(codelist);
 		if(sp == NULL)
 		{
 			printf("VM error\n");
