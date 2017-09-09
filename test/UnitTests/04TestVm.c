@@ -18,7 +18,7 @@
 REGISTER_SUITE_AUTO(VMTest, "04 Virtual Machine Test")
 
 
-static uint64_t* common(char* line, uint64_t expect)
+static uint64_t* common(char* line)
 {
 	Symbol_t* symlist = Lexer_GetSym(line);
 	ParserNode_t* parseTree = Parser_Parse(symlist);
@@ -33,10 +33,10 @@ static uint64_t* common(char* line, uint64_t expect)
 	return sp;
 }
 
-static bool testVal(char* line, uint64_t expect)
+static bool testVal(char* line, char* expect)
 {
-	uint64_t* sp = common(line, expect);
-	ASSERT((expect == Vm_GetStackValue(sp)), ASSERTMSG_INT_FAIL(expect, Vm_GetStackValue(sp)));
+	uint64_t* sp = common(line);
+	ASSERT(ASSERT_CMPSTR(expect,Vm_GetStackValue(sp)), ASSERTMSG_STR_FAIL(expect, Vm_GetStackValue(sp)));
 }
 
 static bool assignVarStackEmpty(char* line)
@@ -62,7 +62,7 @@ static bool expectErr(char* line)
 TESTCASE(Vm01, "VM simple int")
 {
 	char* line = "c0FFee\n";
-	return testVal(line, 0xc0ffee);
+	return testVal(line, "c0ffee");
 }
 
 TESTCASE(Vm02_expectEmpty, "VM Expect Empty Stack")
@@ -74,13 +74,13 @@ TESTCASE(Vm02_expectEmpty, "VM Expect Empty Stack")
 TESTCASE(Vm03_getSymVal, "VM retrieve symbol value")
 {
 	char* line = "$adkels\n";
-	return testVal(line, 0xafdde87);
+	return testVal(line, "afdde87");
 }
 
 TESTCASE(Vm04_complexExpr, "VM complex expr")
 {
 	char* line = "c0ffee + 15 - (10 + 20) * 30+AB*30+(60+CD)*EFF*AD\n";
-	return testVal(line, 0xcab72aa);
+	return testVal(line, "cab72aa");
 }
 
 TESTCASE(Vm05_assignTest, "VM assign variable test")
@@ -92,7 +92,7 @@ TESTCASE(Vm05_assignTest, "VM assign variable test")
 TESTCASE(Vm06_loadVar, "VM load variable test01")
 {
 	char* line = "c0ffee + 15 - (10 + $aadokk) * 30+AB*$adkels+(60+CD)*EFF*AD\n";
-	return testVal(line, 0x504197ce7);
+	return testVal(line, "504197ce7");
 }
 
 TESTCASE(Vm07_loadErr01, "VM retrieve symbol error value")

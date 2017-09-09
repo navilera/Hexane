@@ -228,6 +228,56 @@ static bool GetSymTest21(void)
 	return Common(line, expect);
 }
 
+static bool GetSymTestInvalidId(void)
+{
+	char* line = "$akaslgl30230203 c0ffee AAA U33232 88888 $ad$bb 999\n";
+	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_INT, SYM_ERR, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool GetSymTestInvalidId01(void)
+{
+	char* line = "$akaslgl30230203 c0ffee AAA U33232 88888 $ad $bb 999\n";
+	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_INT, SYM_ID, SYM_ID, SYM_INT, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool GetSymQuote(void)
+{
+	char* line = "$akaslgl30230203 c0ffee AAA U33232 \"c0ffee\" 88888\n";
+	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_STR, SYM_INT, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool GetSymQuoteName(void)
+{
+	char* line = "$akaslgl30230203 c0ffee AAA U33232 \"asksl3kks982ls\" 88888\n";
+	Lexer_GetSym(line);
+
+	char* getName = Lexer_GetIdName(4);
+
+	ASSERT(ASSERT_CMPSTR("asksl3kks982ls", getName), ASSERTMSG_STR_FAIL("asksl3kks982ls", getName));
+}
+
+static bool GetSymQuoteErr01(void)
+{
+	char* line = "$akaslgl30230203 c0ffee AAA U33232\"c0ffee\" 88888\n";
+	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_INT, SYM_ERR, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool GetSymQuoteErr02(void)
+{
+	char* line = "$akaslgl30230203 c0ffee AAA $adg\"c0ffee\" 88888\n";
+	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_INT, SYM_ERR, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
 static void Init(TestSuite_t* suite)
 {
     suite->name = suiteName;
@@ -255,6 +305,12 @@ static void Init(TestSuite_t* suite)
     AddTestCase(suite, GetSymTest19, "GetSym Test [Dec03]");
     AddTestCase(suite, GetSymTest20, "GetSym Test [Dec err03]");
     AddTestCase(suite, GetSymTest21, "GetSym Test [Dec04]");
+    AddTestCase(suite, GetSymTestInvalidId, "GetSym Test [Invalid ID]");
+    AddTestCase(suite, GetSymTestInvalidId01, "GetSym Test [Invalid ID01]");
+    AddTestCase(suite, GetSymQuote, "GetSym Test [Quete]");
+    AddTestCase(suite, GetSymQuoteName, "GetSym Test [QueteName]");
+    AddTestCase(suite, GetSymQuoteErr01, "GetSym Test [QueteErr01]");
+    AddTestCase(suite, GetSymQuoteErr02, "GetSym Test [QueteErr02]");
 }
 
 REGISTER_SUITE_FUNC(LexerTest, Init)

@@ -9,9 +9,9 @@
 #include "Lexer.h"
 
 /*
- * SYM_INT	[0-9a-fA-F]+	// default integer is hex value
+ * SYM_INT	[0-9a-fA-F]+ | [uU][0-9]	// default integer is hex value
  * SYM_ID	$[0-9a-zA-z_]+
- * SYM_DEC	[uU][0-9]
+ * SYM_STR	".*"
  * SYM_COL 	:
  * SYM_DOT	.
  * SYM_LPAR (
@@ -36,6 +36,7 @@ static void initAllSymbolBuffer(void);
 static bool getHexInt(char** chBack, uint64_t* intValBack);
 static bool getDecInt(char** chBack, uint64_t* intValBack);
 static bool getId(char** chBack, char** idSymStr);
+static bool getStr(char** chBack, char** idSymStr);
 static bool cancelPrevSymbol(int index, char* ch, char* line);
 static void setError(int index, char* ch, char* line);
 
@@ -100,6 +101,25 @@ Symbol_t* Lexer_GetSym(char* line)
 			{
 				idNameBuffer[index] = idSymStr;
 				symbolBuffer[index] = SYM_ID;
+				++index;
+			}
+			else
+			{
+				setError(index, ch, line);
+				return symbolBuffer;
+			}
+		}
+		else if(*ch == '"')
+		{
+			// cancel previous symbol if invalid token happens
+			if(cancelPrevSymbol(index, ch, line))
+			{
+				return symbolBuffer;
+			}
+			if(getStr(&ch, &idSymStr))
+			{
+				idNameBuffer[index] = idSymStr;
+				symbolBuffer[index] = SYM_STR;
 				++index;
 			}
 			else
@@ -263,9 +283,41 @@ static bool getId(char** chBack, char** idSymStr)
 	return false;
 }
 
+static bool getStr(char** chBack, char** idSymStr)
+{
+	char* ch = *chBack;
+
+	int i = 0;
+
+	memset(idSymBuffer, 0, sizeof(idSymBuffer));
+	++ch;
+
+	if(*ch != '"')
+	{
+		while(*ch != '"')
+		{
+			idSymBuffer[i++] = *ch;
+			++ch;
+		}
+		idSymBuffer[i] = '\0';
+
+		*idSymStr = (char*)malloc(strlen(idSymBuffer) + 1);
+		memset(*idSymStr, 0, strlen(idSymBuffer) + 1);
+		memcpy(*idSymStr, idSymBuffer, strlen(idSymBuffer));
+
+		++ch;
+		*chBack = ch;
+
+		return true;
+	}
+
+	return false;
+}
+
 static bool cancelPrevSymbol(int index, char* ch, char* line)
 {
-	if(symbolBuffer[index-1] == SYM_INT)
+	if(symbolBuffer[index-1] == SYM_INT ||
+	symbolBuffer[index-1] == SYM_ID)
 	{
 		// cancel in this case
 		// 390acd0adskw
