@@ -22,7 +22,7 @@ static uint64_t* common(char* line)
 {
 	Symbol_t* symlist = Lexer_GetSym(line);
 	ParserNode_t* parseTree = Parser_Parse(symlist);
-	uint64_t* codelist = CodeGen_Compile(parseTree);
+	CodegenList_t* codelist = CodeGen_Compile(parseTree);
 	uint64_t* sp = Vm_Run(codelist);
 
 	if(Vm_IsStackEmpty(sp))
@@ -43,7 +43,7 @@ static bool assignVarStackEmpty(char* line)
 {
 	Symbol_t* symlist = Lexer_GetSym(line);
 	ParserNode_t* parseTree = Parser_Parse(symlist);
-	uint64_t* codelist = CodeGen_Compile(parseTree);
+	CodegenList_t* codelist = CodeGen_Compile(parseTree);
 	uint64_t* sp = Vm_Run(codelist);
 
 	ASSERT((Vm_IsStackEmpty(sp) == true), ASSERTMSG_INT_FAIL(true, Vm_IsStackEmpty(sp)));
@@ -53,7 +53,7 @@ static bool expectErr(char* line)
 {
 	Symbol_t* symlist = Lexer_GetSym(line);
 	ParserNode_t* parseTree = Parser_Parse(symlist);
-	uint64_t* codelist = CodeGen_Compile(parseTree);
+	CodegenList_t* codelist = CodeGen_Compile(parseTree);
 	uint64_t* sp = Vm_Run(codelist);
 
 	ASSERT((sp == NULL), ASSERTMSG_INT_FAIL((uint64_t)NULL, sp));

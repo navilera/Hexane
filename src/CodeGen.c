@@ -10,15 +10,15 @@
 #include "Parser.h"
 #include "CodeGen.h"
 
-static uint64_t lineCodeBuff[CODE_NUM_LIMIT];
+static CodegenList_t lineCodeBuff[CODE_NUM_LIMIT];
 static int lineCodeBuffIndex;
 
 static void compiler(ParserNode_t* parseNode);
-static void addObjCode(ItmdCode_t c);
-static void addObjVal(uint64_t v);
-static void addObjName(char* n);
+static void addObjCode(ItmdCode_t c, CodeType_t type);
+static void addObjVal(uint64_t v, CodeType_t type);
+static void addObjName(char* n, CodeType_t type);
 
-uint64_t* CodeGen_Compile(ParserNode_t* parseTree)
+CodegenList_t* CodeGen_Compile(ParserNode_t* parseTree)
 {
 	lineCodeBuffIndex = 0;
 	compiler(parseTree);
@@ -33,66 +33,72 @@ static void compiler(ParserNode_t* parseNode)
 	case BNF_program:
 		lineCodeBuffIndex = 0;
 		compiler(parseNode->child1);
-		addObjCode(Code_Halt);
+		addObjCode(Code_Halt, CodeType_Instr);
 		break;
 	case BNF_assign:
 		compiler(parseNode->child2);
-		addObjCode(Code_Str);
-		addObjName(parseNode->child1->name);
-		addObjCode(Code_Pop);
+		addObjCode(Code_Str, CodeType_Instr);
+		addObjName(parseNode->child1->name, CodeType_Addr);
+		addObjCode(Code_Pop, CodeType_Instr);
 		break;
 	case BNF_mul:
 		compiler(parseNode->child1);
 		compiler(parseNode->child2);
-		addObjCode(Code_Mul);
+		addObjCode(Code_Mul, CodeType_Instr);
 		break;
 	case BNF_div:
 		compiler(parseNode->child1);
 		compiler(parseNode->child2);
-		addObjCode(Code_Div);
+		addObjCode(Code_Div, CodeType_Instr);
 		break;
 	case BNF_rem:
 		compiler(parseNode->child1);
 		compiler(parseNode->child2);
-		addObjCode(Code_Mod);
+		addObjCode(Code_Mod, CodeType_Instr);
 		break;
 	case BNF_add:
 		compiler(parseNode->child1);
 		compiler(parseNode->child2);
-		addObjCode(Code_Add);
+		addObjCode(Code_Add, CodeType_Instr);
 		break;
 	case BNF_sub:
 		compiler(parseNode->child1);
 		compiler(parseNode->child2);
-		addObjCode(Code_Sub);
+		addObjCode(Code_Sub, CodeType_Instr);
 		break;
 	case BNF_var:
-		addObjCode(Code_Ldr);
-		addObjName(parseNode->name);
+		addObjCode(Code_Ldr, CodeType_Instr);
+		addObjName(parseNode->name, CodeType_Addr);
 		break;
 	case BNF_str:
-		addObjCode(Code_Push);
-		addObjName(parseNode->name);
+		addObjCode(Code_Push, CodeType_Instr);
+		addObjName(parseNode->name, CodeType_Str);
 		break;
 	case BNF_const:
-		addObjCode(Code_Push);
-		addObjVal(parseNode->val);
+		addObjCode(Code_Push, CodeType_Instr);
+		addObjVal(parseNode->val, CodeType_Int);
 		break;
 	case NumberOfBnfs: break;
 	}
 }
 
-static void addObjCode(ItmdCode_t c)
+static void addObjCode(ItmdCode_t c, CodeType_t type)
 {
-	lineCodeBuff[lineCodeBuffIndex++] = (uint64_t)c;
+	lineCodeBuff[lineCodeBuffIndex].val = (uint64_t)c;
+	lineCodeBuff[lineCodeBuffIndex].type = type;
+	lineCodeBuffIndex++;
 }
 
-static void addObjVal(uint64_t v)
+static void addObjVal(uint64_t v, CodeType_t type)
 {
-	lineCodeBuff[lineCodeBuffIndex++] = v;
+	lineCodeBuff[lineCodeBuffIndex].val = v;
+	lineCodeBuff[lineCodeBuffIndex].type = type;
+	lineCodeBuffIndex++;
 }
 
-static void addObjName(char* n)
+static void addObjName(char* n, CodeType_t type)
 {
-	lineCodeBuff[lineCodeBuffIndex++] = (uint64_t)n;
+	lineCodeBuff[lineCodeBuffIndex].val = (uint64_t)n;
+	lineCodeBuff[lineCodeBuffIndex].type = type;
+	lineCodeBuffIndex++;
 }

@@ -23,29 +23,34 @@ static bool isExistSymbolTable(char* name);
 static void errorMsg(char* errMsg);
 
 
-uint64_t* Vm_Run(uint64_t* code)
+uint64_t* Vm_Run(CodegenList_t* code)
 {
 	memset(stack, 0, VM_STACKSIZE);
 	memset(errorMessage, 0, VM_ERRSTRLEN);
 
 	uint64_t* sp = stack;
-	uint64_t* pc = code;
+	CodegenList_t* pc = code;
 
 	while(true)
 	{
-		switch((ItmdCode_t)*pc++)
+		ItmdCode_t instr = pc->val;
+		pc++;
+
+		switch(instr)
 		{
 		case Code_Str:
-			if(!storeSymbolTable((char*)*pc++, sp[-1]))
+			if(!storeSymbolTable((char*)pc->val, sp[-1]))
 			{
 				errorMsg(VM_ERR_not_enough_symbol_table);
 				return NULL;	// error
 			}
+			pc++;
 			break;
 		case Code_Ldr:
-			if(isExistSymbolTable((char*)*pc))
+			if(isExistSymbolTable((char*)pc->val))
 			{
-				*sp++ = loadSymbolTable((char*)*pc++);
+				*sp++ = loadSymbolTable((char*)pc->val);
+				pc++;
 			}
 			else
 			{
@@ -54,7 +59,8 @@ uint64_t* Vm_Run(uint64_t* code)
 			}
 			break;
 		case Code_Push:
-			*sp++ = *pc++;
+			*sp++ = pc->val;
+			pc++;
 			break;
 		case Code_Pop:
 			--sp;

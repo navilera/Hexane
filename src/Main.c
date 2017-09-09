@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 			continue;
 		}
 
-		uint64_t* codelist = CodeGen_Compile(parseTree);
+		CodegenList_t* codelist = CodeGen_Compile(parseTree);
 		if(codelist == NULL)
 		{
 			printf("Compile error\n");

@@ -23,8 +23,22 @@ typedef enum {
 	NumberOfCodes
 }ItmdCode_t;
 
+typedef enum {
+	CodeType_Instr,
+	CodeType_Addr,
+	CodeType_Int,
+	CodeType_Str,
+	NumberOfCodeType
+}CodeType_t;
+
+typedef struct _codegen_codelist_t_
+{
+	uint64_t val;
+	CodeType_t type;
+} CodegenList_t;
+
 #define CODE_NUM_LIMIT		1024
 
-uint64_t* CodeGen_Compile(ParserNode_t* parseTree);
+CodegenList_t* CodeGen_Compile(ParserNode_t* parseTree);
 
 #endif /* SRC_CODEGEN_H_ */

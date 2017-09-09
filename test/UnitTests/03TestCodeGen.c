@@ -20,42 +20,26 @@ static char expectBuf[BUFLEN];
 
 #define ENABLE_PUSH_STR	(NumberOfBnfs + 1)
 
-static void serialize(uint64_t* resultlist, char* target_out, bool enablePushStr)
+static void serialize(CodegenList_t* resultlist, char* target_out)
 {
 	char temp[64] = {0};
-	bool nextIsId = false;
 	memset(target_out, 0, BUFLEN);
 	for(int i = 0 ; i < CODE_NUM_LIMIT ; ++i)
 	{
-		if(resultlist[i] == (uint64_t)Code_Halt)
+		if(resultlist[i].val == (uint64_t)Code_Halt)
 		{
 			break;
 		}
 
-		if(nextIsId == false)
+		if(resultlist[i].type == CodeType_Addr || resultlist[i].type == CodeType_Str)
 		{
-			sprintf(temp, "%lx,", (uint64_t)resultlist[i]);
+			sprintf(temp, "%s,", (char*)resultlist[i].val);
 		}
 		else
 		{
-			sprintf(temp, "%s,", (char*)resultlist[i]);
+			sprintf(temp, "%lx,", (uint64_t)resultlist[i].val);
 		}
 
-		if(resultlist[i] == (uint64_t)Code_Str || resultlist[i] == (uint64_t)Code_Ldr)
-		{
-			nextIsId = true;
-		}
-		else
-		{
-			if(enablePushStr && resultlist[i] == (uint64_t)Code_Push)
-			{
-				nextIsId = true;
-			}
-			else
-			{
-				nextIsId = false;
-			}
-		}
 		strcat(target_out, temp);
 	}
 }
@@ -64,7 +48,9 @@ static bool common(char* line, uint64_t* expectlist)
 {
 	Symbol_t* symlist = Lexer_GetSym(line);
 	ParserNode_t* parseTree = Parser_Parse(symlist);
-	uint64_t* codelist = CodeGen_Compile(parseTree);
+	CodegenList_t* codelist = CodeGen_Compile(parseTree);
+
+	CodegenList_t expectCode[CODE_NUM_LIMIT] = {0};
 
 	bool enablePushStr = false;
 
@@ -74,8 +60,23 @@ static bool common(char* line, uint64_t* expectlist)
 		expectlist = &expectlist[1];
 	}
 
-	serialize(codelist, actualBuf, enablePushStr);
-	serialize(expectlist, expectBuf, enablePushStr);
+	for(int i = 0 ; i < CODE_NUM_LIMIT ; ++i)
+	{
+		expectCode[i].val = expectlist[i];
+
+		if(expectlist[i] == Code_Str || expectlist[i] == Code_Ldr || enablePushStr)
+		{
+			expectCode[i+1].type = CodeType_Str;
+		}
+
+		if(expectlist[i] == (uint64_t)Code_Halt)
+		{
+			break;
+		}
+	}
+
+	serialize(codelist, actualBuf);
+	serialize(expectCode, expectBuf);
 
 	ASSERT(ASSERT_CMPSTR(expectBuf, actualBuf), ASSERTMSG_STR_FAIL(expectBuf, actualBuf));
 }
