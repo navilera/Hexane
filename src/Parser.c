@@ -13,7 +13,8 @@
  * <program> ::= <statement>
  * <statement> ::= <expr>
  *               | <id> = <expr>
- * <expr> ::= <addtive_expr>
+ * <expr> ::= <str>
+ *          | <addtive_expr>
  * <multiplicative_expr> ::= <term>
  *                         | <multiplicative_expr> * <term>
  *                         | <multiplicative_expr> / <term>
@@ -26,6 +27,7 @@
  *          | (<expr>)
  * <id> ::= SYM_ID
  * <int> ::= SYM_INT
+ * <str> ::= SYM_STR
  */
 
 static ParserNode_t* newNode(Bnf_t type);
@@ -143,13 +145,23 @@ static ParserNode_t* statement(void)
 	return nodeStatement;
 }
 
-// <expr> ::= <addtive_expr>
+// <expr> ::= <str>
+//          | <addtive_expr>
 static ParserNode_t* expr(void)
 {
 	ParserNode_t* nodeExpr;
 
-	nodeExpr = additiv_expr();
-	CHK_SYNERR_RETURN;
+	if(*symCurrent == SYM_STR)
+	{
+		nodeExpr = newNode(BNF_str);
+		nodeExpr->name = getSymIdName();
+		symCurrent++;
+	}
+	else
+	{
+		nodeExpr = additiv_expr();
+		CHK_SYNERR_RETURN;
+	}
 
 	return nodeExpr;
 }

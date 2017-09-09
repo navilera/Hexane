@@ -18,7 +18,9 @@ REGISTER_SUITE_AUTO(CodeGenTest, "03 Code Generator Test")
 static char actualBuf[BUFLEN];
 static char expectBuf[BUFLEN];
 
-static void serialize(uint64_t* resultlist, char* target_out)
+#define ENABLE_PUSH_STR	(NumberOfBnfs + 1)
+
+static void serialize(uint64_t* resultlist, char* target_out, bool enablePushStr)
 {
 	char temp[64] = {0};
 	bool nextIsId = false;
@@ -29,6 +31,7 @@ static void serialize(uint64_t* resultlist, char* target_out)
 		{
 			break;
 		}
+
 		if(nextIsId == false)
 		{
 			sprintf(temp, "%lx,", (uint64_t)resultlist[i]);
@@ -44,7 +47,14 @@ static void serialize(uint64_t* resultlist, char* target_out)
 		}
 		else
 		{
-			nextIsId = false;
+			if(enablePushStr && resultlist[i] == (uint64_t)Code_Push)
+			{
+				nextIsId = true;
+			}
+			else
+			{
+				nextIsId = false;
+			}
 		}
 		strcat(target_out, temp);
 	}
@@ -56,8 +66,16 @@ static bool common(char* line, uint64_t* expectlist)
 	ParserNode_t* parseTree = Parser_Parse(symlist);
 	uint64_t* codelist = CodeGen_Compile(parseTree);
 
-	serialize(codelist, actualBuf);
-	serialize(expectlist, expectBuf);
+	bool enablePushStr = false;
+
+	if(expectlist[0] == ENABLE_PUSH_STR)
+	{
+		enablePushStr = true;
+		expectlist = &expectlist[1];
+	}
+
+	serialize(codelist, actualBuf, enablePushStr);
+	serialize(expectlist, expectBuf, enablePushStr);
 
 	ASSERT(ASSERT_CMPSTR(expectBuf, actualBuf), ASSERTMSG_STR_FAIL(expectBuf, actualBuf));
 }
@@ -101,6 +119,14 @@ TESTCASE(codegen05, "Simple term")
 {
 	char* line = "$an\n";
 	uint64_t expect[64] = {Code_Ldr, (uint64_t)"an", Code_Halt, 0};
+
+	return common(line, expect);
+}
+
+TESTCASE(codegenStr, "String")
+{
+	char* line = "\"asdlkgjearh4x\"\n";
+	uint64_t expect[64] = {ENABLE_PUSH_STR, Code_Push, (uint64_t)"asdlkgjearh4x", Code_Halt, 0};
 
 	return common(line, expect);
 }

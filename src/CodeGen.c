@@ -70,6 +70,10 @@ static void compiler(ParserNode_t* parseNode)
 		addObjCode(Code_Ldr);
 		addObjName(parseNode->name);
 		break;
+	case BNF_str:
+		addObjCode(Code_Push);
+		addObjName(parseNode->name);
+		break;
 	case BNF_const:
 		addObjCode(Code_Push);
 		addObjVal(parseNode->val);

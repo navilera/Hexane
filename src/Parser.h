@@ -10,15 +10,16 @@
 
 typedef enum {
 	BNF_NO = 0,
-	BNF_program,
-	BNF_assign,
-	BNF_mul,
-	BNF_div,
-	BNF_rem,
-	BNF_add,
-	BNF_sub,
-	BNF_var,
-	BNF_const,
+	BNF_program,	// 1
+	BNF_assign,		// 2
+	BNF_mul,		// 3
+	BNF_div,		// 4
+	BNF_rem,		// 5
+	BNF_add,		// 6
+	BNF_sub,		// 7
+	BNF_var,		// 8
+	BNF_const,		// 9
+	BNF_str,		// A
 	NumberOfBnfs
 } Bnf_t;
 
