@@ -129,7 +129,10 @@ static bool storeSymbolTable(char* name, VmStack_t spval)
 	{
 		if(symbolTable[index].val.type == VmStackType_Str)
 		{
-			free((void*)symbolTable[index].val.val);
+			if(symbolTable[index].val.val != 0)
+			{
+				free((void*)symbolTable[index].val.val);
+			}
 		}
 
 		symbolTable[index].val.type = spval.type;
