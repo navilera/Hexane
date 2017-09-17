@@ -14,7 +14,7 @@
  * <statement> ::= <id> = <expr>
  *               | <expr>
  * <expr> ::= <str>
- * 			| <id>(<expr>)
+ * 			| <func>(<expr>)
  *          | <addtive_expr>
  * <multiplicative_expr> ::= <term>
  *                         | <multiplicative_expr> * <term>
@@ -29,6 +29,7 @@
  * <id> ::= TOK_ID
  * <int> ::= TOK_INT
  * <str> ::= TOK_STR
+ * <func> ::= TOK_FUNC
  */
 
 static ParserNode_t* newNode(Bnf_t type);
@@ -163,7 +164,7 @@ static ParserNode_t* statement(void)
 }
 
 // <expr> ::= <str>
-//          | <id>(<expr>)
+//          | <func>(<expr>)
 //          | <addtive_expr>
 static ParserNode_t* expr(void)
 {
@@ -175,7 +176,7 @@ static ParserNode_t* expr(void)
 		nodeExpr->name = getSymIdName();
 		tokCurrent++;
 	}
-//	else if(*symCurrent == SYM_ID)
+//	else if(*symCurrent == TOK_FUNC)
 //	{
 
 //	}

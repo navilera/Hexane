@@ -10,21 +10,21 @@
 
 typedef enum {
 	TOK_NOSYM = 0,
-	TOK_INT,
-	TOK_ID,
-	TOK_STR,
-	TOK_COL,
-	TOK_DOT,
-	TOK_LPAR,
-	TOK_RPAR,
-	TOK_PLUS,
-	TOK_MIN,
-	TOK_MUL,
-	TOK_DIV,
-	TOK_RIM,
-	TOK_EQU,
-	TOK_FUNC,
-	TOK_ERR,
+	TOK_INT,		// 1
+	TOK_ID,			// 2
+	TOK_STR,		// 3
+	TOK_COL,		// 4
+	TOK_DOT,		// 5
+	TOK_LPAR,		// 6
+	TOK_RPAR,		// 7
+	TOK_PLUS,		// 8
+	TOK_MIN,		// 9
+	TOK_MUL,		// A
+	TOK_DIV,		// B
+	TOK_RIM,		// C
+	TOK_EQU,		// D
+	TOK_FUNC,		// E
+	TOK_ERR,		// F
 	NumberOfSymbols
 } Token_t;
 

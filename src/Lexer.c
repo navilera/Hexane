@@ -51,6 +51,8 @@ Token_t* Lexer_GetTok(char* line)
 	uint64_t intVal = 0;
 	char* idTokStr = NULL;
 
+	bool skipFunctionName = false;
+
 	initAllTokenBuffer();
 
 	ch = line;
@@ -74,6 +76,54 @@ Token_t* Lexer_GetTok(char* line)
 		else if(*ch == '\n')
 		{
 			return tokenBuffer;
+		}
+		else if((skipFunctionName == false) && ((*ch >= 'a' && *ch <= 'z') || (*ch >= 'A' && *ch <= 'Z') || (*ch == '@') || (*ch == '_')))
+		{
+			char* chBackup = ch;
+
+			memset(idTokBuffer, 0, sizeof(idTokBuffer));
+			++ch;
+
+			int i = 0;
+			while((*ch >= '0' && *ch <= '9') || (*ch >= 'a' && *ch <= 'z') || (*ch >= 'A' && *ch <= 'Z') || (*ch == '@') || (*ch == '_'))
+			{
+				idTokBuffer[i++] = *ch;
+				++ch;
+			}
+			idTokBuffer[i] = '\0';
+
+			while(*ch == ' ')
+			{
+				// skip blank
+				++ch;
+			}
+
+			// start indicator of function call
+			if(*ch == '(')
+			{
+				if(cancelPrevToken(index, chBackup, line))
+				{
+					return tokenBuffer;
+				}
+
+				idTokStr = (char*)malloc(strlen(idTokBuffer) + 1);
+				memset(idTokStr, 0, strlen(idTokBuffer) + 1);
+				memcpy(idTokStr, idTokBuffer, strlen(idTokBuffer));
+
+				idNameBuffer[index] = idTokStr;
+				tokenBuffer[index] = TOK_FUNC;
+				++index;
+				tokenBuffer[index] = TOK_LPAR;
+				++index;
+				++ch;
+			}
+			else
+			{
+				// rewind and pass it to another lexical analysis process
+				ch = chBackup;
+				skipFunctionName = true;
+				continue;
+			}
 		}
 		else if((*ch >= '0' && *ch <= '9') || (*ch >= 'a' && *ch <= 'f') || (*ch >= 'A' && *ch <= 'F'))
 		{
@@ -159,6 +209,8 @@ Token_t* Lexer_GetTok(char* line)
 			setError(index, ch, line);
 			return tokenBuffer;
 		}
+
+		skipFunctionName = false;
 	}
 
 	return tokenBuffer;
