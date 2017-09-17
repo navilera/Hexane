@@ -278,6 +278,14 @@ static bool GetSymQuoteErr02(void)
 	return Common(line, expect);
 }
 
+static bool GetAssingErr(void)
+{
+	char* line = "3234=5542\n";
+	Symbol_t expect[16] = {SYM_INT, SYM_EQU, SYM_INT, SYM_NOSYM};
+
+	return Common(line, expect);
+}
+
 static void Init(TestSuite_t* suite)
 {
     suite->name = suiteName;
@@ -311,6 +319,7 @@ static void Init(TestSuite_t* suite)
     AddTestCase(suite, GetSymQuoteName, "GetSym Test [QueteName]");
     AddTestCase(suite, GetSymQuoteErr01, "GetSym Test [QueteErr01]");
     AddTestCase(suite, GetSymQuoteErr02, "GetSym Test [QueteErr02]");
+    AddTestCase(suite, GetAssingErr, "GetSym Test [Assign Error]");
 }
 
 REGISTER_SUITE_FUNC(LexerTest, Init)

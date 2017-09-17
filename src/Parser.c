@@ -11,10 +11,11 @@
 
 /*
  * <program> ::= <statement>
- * <statement> ::= <expr>
- *               | <id> = <expr>
+ * <statement> ::= <id> = <expr>
+ *               | <expr>
  * <expr> ::= <str>
  *          | <addtive_expr>
+ * 			| <id>(<expr>)
  * <multiplicative_expr> ::= <term>
  *                         | <multiplicative_expr> * <term>
  *                         | <multiplicative_expr> / <term>
@@ -120,26 +121,42 @@ static ParserNode_t* program(void)
 	return nodeProgram;
 }
 
-// <statement> ::= <expr>
-//               | <id> = <expr>
+// <statement> ::= <id> = <expr>
+//               | <expr>
 static ParserNode_t* statement(void)
 {
 	ParserNode_t* nodeStatement;
 
-	nodeStatement = expr();
-	CHK_SYNERR_RETURN;
-
-	if(*symCurrent == SYM_EQU)
+	if(*symCurrent == SYM_ID)
 	{
-		ParserNode_t* nodeAssign = newNode(BNF_assign);
-		nodeAssign->child1 = nodeStatement;
-
+		char* idName = getSymIdName();
 		symCurrent++;
 
-		nodeAssign->child2 = expr();
-		CHK_SYNERR_RETURN;
+		if(*symCurrent == SYM_EQU)
+		{
+			ParserNode_t* nodeId = newNode(BNF_var);
+			nodeId->name = idName;
 
-		nodeStatement = nodeAssign;
+			nodeStatement = newNode(BNF_assign);
+			nodeStatement->child1 = nodeId;
+
+			symCurrent++;
+
+			nodeStatement->child2 = expr();
+			CHK_SYNERR_RETURN;
+		}
+		else
+		{
+			// rewind
+			symCurrent--;
+			nodeStatement = expr();
+			CHK_SYNERR_RETURN;
+		}
+	}
+	else
+	{
+		nodeStatement = expr();
+		CHK_SYNERR_RETURN;
 	}
 
 	return nodeStatement;
@@ -147,6 +164,7 @@ static ParserNode_t* statement(void)
 
 // <expr> ::= <str>
 //          | <addtive_expr>
+//          | <id>(<expr>)
 static ParserNode_t* expr(void)
 {
 	ParserNode_t* nodeExpr;
@@ -157,6 +175,10 @@ static ParserNode_t* expr(void)
 		nodeExpr->name = getSymIdName();
 		symCurrent++;
 	}
+//	else if(*symCurrent == SYM_ID)
+//	{
+
+//	}
 	else
 	{
 		nodeExpr = additiv_expr();

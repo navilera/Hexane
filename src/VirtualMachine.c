@@ -32,7 +32,7 @@ VmStack_t* Vm_Run(CodegenList_t* code)
 
 	while(true)
 	{
-		ItmdCode_t instr = pc->val;
+		ItmdCode_t instr = (ItmdCode_t)pc->val;
 		pc++;
 
 		switch(instr)

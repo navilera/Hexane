@@ -262,3 +262,12 @@ TESTCASE(stringExprTest_str04, "String test04")
 	int depth[30] = {1, 2, 0};
 	return commonTestName(line, "aslg923lkd", depth);
 }
+
+TESTCASE(assignErrTest01, "Assign Err")
+{
+	char* line = "324252=3432\n";
+	Symbol_t* symlist = Lexer_GetSym(line);
+	ParserNode_t* parseTree = Parser_Parse(symlist);
+
+	ASSERT((parseTree == NULL), ASSERTMSG_INT_FAIL(NULL, parseTree));
+}
