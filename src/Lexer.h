@@ -23,6 +23,7 @@ typedef enum {
 	TOK_DIV,
 	TOK_RIM,
 	TOK_EQU,
+	TOK_FUNC,
 	TOK_ERR,
 	NumberOfSymbols
 } Token_t;

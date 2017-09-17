@@ -9,8 +9,9 @@
 #include "Lexer.h"
 
 /*
- * TOK_INT	[0-9a-fA-F]+ | [uU][0-9]	// default integer is hex value
+ * TOK_INT	[0-9a-fA-F]+ | [uU][0-9]+	// default integer is hex value
  * TOK_ID	$[0-9a-zA-z_]+
+ * TOK_FUNC [a-zA-Z@_][0-9a-zA-Z@_]*
  * TOK_STR	".*"
  * TOK_COL 	:
  * TOK_DOT	.

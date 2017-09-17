@@ -286,6 +286,14 @@ static bool GetAssingErr(void)
 	return Common(line, expect);
 }
 
+static bool FunctionCall(void)
+{
+	char* line = "dec(c0ffee)\n";
+	Token_t expect[16] = {TOK_FUNC, TOK_LPAR, TOK_INT, TOK_RPAR, TOK_NOSYM};
+
+	return Common(line, expect);
+}
+
 static void Init(TestSuite_t* suite)
 {
     suite->name = suiteName;
@@ -320,6 +328,7 @@ static void Init(TestSuite_t* suite)
     AddTestCase(suite, GetSymQuoteErr01, "GetSym Test [QueteErr01]");
     AddTestCase(suite, GetSymQuoteErr02, "GetSym Test [QueteErr02]");
     AddTestCase(suite, GetAssingErr, "GetSym Test [Assign Error]");
+    AddTestCase(suite, FunctionCall, "Function call expression");
 }
 
 REGISTER_SUITE_FUNC(LexerTest, Init)
