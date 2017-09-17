@@ -33,7 +33,7 @@ typedef struct _parser_node_t_
 	char* name;
 } ParserNode_t;
 
-ParserNode_t* Parser_Parse(Token_t* symlist);
+ParserNode_t* Parser_Parse(Token_t* toklist);
 void          Parser_Release(ParserNode_t* parseResult);
 
 #endif /* SRC_PARSER_H_ */

@@ -26,9 +26,9 @@
  * <term> ::= <id>
  *          | <int>
  *          | (<expr>)
- * <id> ::= SYM_ID
- * <int> ::= SYM_INT
- * <str> ::= SYM_STR
+ * <id> ::= TOK_ID
+ * <int> ::= TOK_INT
+ * <str> ::= TOK_STR
  */
 
 static ParserNode_t* newNode(Bnf_t type);
@@ -43,23 +43,23 @@ static ParserNode_t* term(void);
 static char* getSymIdName(void);
 static uint64_t getSymIntVal(void);
 
-static Token_t* symStart;
-static Token_t *symCurrent;
+static Token_t* tokStart;
+static Token_t *tokCurrent;
 
 static bool syntaxError;
 
 #define SYNERR_RETURN		{syntaxError = true; return NULL;}
 #define CHK_SYNERR_RETURN	{if(syntaxError) {return NULL;}}
 
-ParserNode_t* Parser_Parse(Token_t* symlist)
+ParserNode_t* Parser_Parse(Token_t* toklist)
 {
 	syntaxError = false;
-	symStart = symlist;
-	symCurrent = symlist;
+	tokStart = toklist;
+	tokCurrent = toklist;
 
 	ParserNode_t* parseResult = program();
 
-	if(*symCurrent != TOK_NOSYM)
+	if(*tokCurrent != TOK_NOSYM)
 	{
 		// syntax error
 		return NULL;
@@ -81,13 +81,13 @@ void Parser_Release(ParserNode_t* parseResult)
 
 static char* getSymIdName(void)
 {
-	int index = (int)(symCurrent - symStart);
+	int index = (int)(tokCurrent - tokStart);
 	return Lexer_GetIdName(index);
 }
 
 static uint64_t getSymIntVal(void)
 {
-	int index = (int)(symCurrent - symStart);
+	int index = (int)(tokCurrent - tokStart);
 	return Lexer_GetIntVal(index);
 }
 
@@ -127,12 +127,12 @@ static ParserNode_t* statement(void)
 {
 	ParserNode_t* nodeStatement;
 
-	if(*symCurrent == TOK_ID)
+	if(*tokCurrent == TOK_ID)
 	{
 		char* idName = getSymIdName();
-		symCurrent++;
+		tokCurrent++;
 
-		if(*symCurrent == TOK_EQU)
+		if(*tokCurrent == TOK_EQU)
 		{
 			ParserNode_t* nodeId = newNode(BNF_var);
 			nodeId->name = idName;
@@ -140,7 +140,7 @@ static ParserNode_t* statement(void)
 			nodeStatement = newNode(BNF_assign);
 			nodeStatement->child1 = nodeId;
 
-			symCurrent++;
+			tokCurrent++;
 
 			nodeStatement->child2 = expr();
 			CHK_SYNERR_RETURN;
@@ -148,7 +148,7 @@ static ParserNode_t* statement(void)
 		else
 		{
 			// rewind
-			symCurrent--;
+			tokCurrent--;
 			nodeStatement = expr();
 			CHK_SYNERR_RETURN;
 		}
@@ -169,11 +169,11 @@ static ParserNode_t* expr(void)
 {
 	ParserNode_t* nodeExpr;
 
-	if(*symCurrent == TOK_STR)
+	if(*tokCurrent == TOK_STR)
 	{
 		nodeExpr = newNode(BNF_str);
 		nodeExpr->name = getSymIdName();
-		symCurrent++;
+		tokCurrent++;
 	}
 //	else if(*symCurrent == SYM_ID)
 //	{
@@ -198,12 +198,12 @@ static ParserNode_t* additiv_expr(void)
 	nodeAdditiv = mutipli_expr();
 	CHK_SYNERR_RETURN;
 
-	while(*symCurrent == TOK_PLUS || *symCurrent == TOK_MIN)
+	while(*tokCurrent == TOK_PLUS || *tokCurrent == TOK_MIN)
 	{
-		ParserNode_t* nodeAdd = newNode((*symCurrent == TOK_PLUS)?BNF_add:BNF_sub);
+		ParserNode_t* nodeAdd = newNode((*tokCurrent == TOK_PLUS)?BNF_add:BNF_sub);
 		nodeAdd->child1 = nodeAdditiv;
 
-		symCurrent++;
+		tokCurrent++;
 
 		nodeAdd->child2 = mutipli_expr();
 		CHK_SYNERR_RETURN;
@@ -225,25 +225,25 @@ static ParserNode_t* mutipli_expr(void)
 	nodeMutipli = term();
 	CHK_SYNERR_RETURN;
 
-	while(*symCurrent == TOK_MUL || *symCurrent == TOK_DIV || *symCurrent == TOK_RIM)
+	while(*tokCurrent == TOK_MUL || *tokCurrent == TOK_DIV || *tokCurrent == TOK_RIM)
 	{
 		ParserNode_t* nodeMul;
-		if(*symCurrent == TOK_MUL)
+		if(*tokCurrent == TOK_MUL)
 		{
 			nodeMul = newNode(BNF_mul);
 		}
-		else if(*symCurrent == TOK_DIV)
+		else if(*tokCurrent == TOK_DIV)
 		{
 			nodeMul = newNode(BNF_div);
 		}
-		else if(*symCurrent == TOK_RIM)
+		else if(*tokCurrent == TOK_RIM)
 		{
 			nodeMul = newNode(BNF_rem);
 		}
 
 		nodeMul->child1 = nodeMutipli;
 
-		symCurrent++;
+		tokCurrent++;
 
 		nodeMul->child2 = term();
 		CHK_SYNERR_RETURN;
@@ -261,26 +261,26 @@ static ParserNode_t* term(void)
 {
 	ParserNode_t* nodeTerm;
 
-	if(*symCurrent == TOK_ID)
+	if(*tokCurrent == TOK_ID)
 	{
 		nodeTerm = newNode(BNF_var);
 		nodeTerm->name = getSymIdName();
-		symCurrent++;
+		tokCurrent++;
 	}
-	else if(*symCurrent == TOK_INT)
+	else if(*tokCurrent == TOK_INT)
 	{
 		nodeTerm = newNode(BNF_const);
 		nodeTerm->val = getSymIntVal();
-		symCurrent++;
+		tokCurrent++;
 	}
-	else if(*symCurrent == TOK_LPAR)
+	else if(*tokCurrent == TOK_LPAR)
 	{
-		symCurrent++;
+		tokCurrent++;
 		nodeTerm = expr();
 		CHK_SYNERR_RETURN;
-		if(*symCurrent == TOK_RPAR)
+		if(*tokCurrent == TOK_RPAR)
 		{
-			symCurrent++;
+			tokCurrent++;
 		}
 		else
 		{
