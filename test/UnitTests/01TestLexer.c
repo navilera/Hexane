@@ -16,20 +16,20 @@ static char* suiteName = "01 Lexer Test";
 static char actualBuf[BUFLEN];
 static char expectBuf[BUFLEN];
 
-static void serialize(Symbol_t* symlist, char* target_out)
+static void serialize(Token_t* symlist, char* target_out)
 {
 	char temp[64] = {0};
 	memset(target_out, 0, BUFLEN);
-	for(Symbol_t *sym = symlist; *sym != SYM_NOSYM ; ++sym)
+	for(Token_t *sym = symlist; *sym != TOK_NOSYM ; ++sym)
 	{
 		sprintf(temp, "%02x,", (uint32_t)((*sym) & 0xFF));
 		strcat(target_out, temp);
 	}
 }
 
-static bool Common(char* line, Symbol_t* expect)
+static bool Common(char* line, Token_t* expect)
 {
-	Symbol_t* symlist = Lexer_GetSym(line);
+	Token_t* symlist = Lexer_GetTok(line);
 
 	serialize(symlist, actualBuf);
 	serialize(expect, expectBuf);
@@ -40,7 +40,7 @@ static bool Common(char* line, Symbol_t* expect)
 static bool GetSymTest00(void)
 {
 	char* line = "$akaslgl 30230203 c0ffee\n";
-	Symbol_t expect[4] = {SYM_ID, SYM_INT, SYM_INT, SYM_NOSYM};
+	Token_t expect[4] = {TOK_ID, TOK_INT, TOK_INT, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -48,7 +48,7 @@ static bool GetSymTest00(void)
 static bool GetSymTest_term(void)
 {
 	char* line = "$akaslgl\n";
-	Symbol_t expect[4] = {SYM_ID, SYM_NOSYM};
+	Token_t expect[4] = {TOK_ID, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -56,7 +56,7 @@ static bool GetSymTest_term(void)
 static bool GetSymTest01(void)
 {
 	char* line = "$akaslgl30230203 c0ffee 23849\n";
-	Symbol_t expect[4] = {SYM_ID, SYM_INT, SYM_INT, SYM_NOSYM};
+	Token_t expect[4] = {TOK_ID, TOK_INT, TOK_INT, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -64,7 +64,7 @@ static bool GetSymTest01(void)
 static bool GetSymTest02(void)
 {
 	char* line = "$akaslgl30230203 c0ffee 23849 134578ae asldfpksdf 3324 $asdfl\n";
-	Symbol_t expect[6] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_ERR, SYM_NOSYM};
+	Token_t expect[6] = {TOK_ID, TOK_INT, TOK_INT, TOK_INT, TOK_ERR, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -72,7 +72,7 @@ static bool GetSymTest02(void)
 static bool GetSymTest03(void)
 {
 	char* line = "$akaslgl30230203 c0ffee 23849 134578ae $234235\n";
-	Symbol_t expect[6] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_ID, SYM_NOSYM};
+	Token_t expect[6] = {TOK_ID, TOK_INT, TOK_INT, TOK_INT, TOK_ID, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -80,7 +80,7 @@ static bool GetSymTest03(void)
 static bool GetSymTest04(void)
 {
 	char* line = "$akaslgl30230203 c0ffee 23849 134$578ae $234235\n";
-	Symbol_t expect[5] = {SYM_ID, SYM_INT, SYM_INT, SYM_ERR, SYM_NOSYM};
+	Token_t expect[5] = {TOK_ID, TOK_INT, TOK_INT, TOK_ERR, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -88,7 +88,7 @@ static bool GetSymTest04(void)
 static bool GetSymTest05(void)
 {
 	char* line = "$akaslgl30230203 c0ffee 23849 134578ae sldfpksdf 3324 $asdfl\n";
-	Symbol_t expect[6] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_ERR, SYM_NOSYM};
+	Token_t expect[6] = {TOK_ID, TOK_INT, TOK_INT, TOK_INT, TOK_ERR, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -96,7 +96,7 @@ static bool GetSymTest05(void)
 static bool GetSymTest06(void)
 {
 	char* line = "$akaslgl30230203 c0ffee 23849 134578ae sldfpksdf 3324 $asdfl\n";
-	Lexer_GetSym(line);
+	Lexer_GetTok(line);
 
 	uint64_t getInt = Lexer_GetIntVal(2);
 
@@ -106,7 +106,7 @@ static bool GetSymTest06(void)
 static bool GetSymTest07(void)
 {
 	char* line = "$akaslgl30230203 c0ffee 23849 134578ae $sldfpksdf 3324 $asdfl\n";
-	Lexer_GetSym(line);
+	Lexer_GetTok(line);
 
 	char* getId = Lexer_GetIdName(4);
 
@@ -116,7 +116,7 @@ static bool GetSymTest07(void)
 static bool GetSymTest08(void)
 {
 	char* line = "$akaslgl30230203 c0ffee 23849 134578ae $ 3324 $asdfl\n";
-	Symbol_t expect[6] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_ERR, SYM_NOSYM};
+	Token_t expect[6] = {TOK_ID, TOK_INT, TOK_INT, TOK_INT, TOK_ERR, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -124,7 +124,7 @@ static bool GetSymTest08(void)
 static bool GetSymTest09(void)
 {
 	char* line = "$akaslgl=$aoekd+400AE8+$ldske\n";
-	Symbol_t expect[8] = {SYM_ID, SYM_EQU, SYM_ID, SYM_PLUS, SYM_INT, SYM_PLUS, SYM_ID, SYM_NOSYM};
+	Token_t expect[8] = {TOK_ID, TOK_EQU, TOK_ID, TOK_PLUS, TOK_INT, TOK_PLUS, TOK_ID, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -132,7 +132,7 @@ static bool GetSymTest09(void)
 static bool GetSymTest10(void)
 {
 	char* line = "$akaslgl=$aoekd+400AE8+$ldske\n";
-	Lexer_GetSym(line);
+	Lexer_GetTok(line);
 
 	uint64_t getInt = Lexer_GetIntVal(4);
 
@@ -142,7 +142,7 @@ static bool GetSymTest10(void)
 static bool GetSymTest11(void)
 {
 	char* line = "$akaslgl =$aoekd + 400AE8+  $ldske\n";
-	Symbol_t expect[8] = {SYM_ID, SYM_EQU, SYM_ID, SYM_PLUS, SYM_INT, SYM_PLUS, SYM_ID, SYM_NOSYM};
+	Token_t expect[8] = {TOK_ID, TOK_EQU, TOK_ID, TOK_PLUS, TOK_INT, TOK_PLUS, TOK_ID, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -150,7 +150,7 @@ static bool GetSymTest11(void)
 static bool GetSymTest12(void)
 {
 	char* line = "$akaslgl30230203 c0ffee 23849 134=$578ae $234235\n";
-	Symbol_t expect[8] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_EQU, SYM_ID, SYM_ID, SYM_NOSYM};
+	Token_t expect[8] = {TOK_ID, TOK_INT, TOK_INT, TOK_INT, TOK_EQU, TOK_ID, TOK_ID, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -158,8 +158,8 @@ static bool GetSymTest12(void)
 static bool GetSymTest13(void)
 {
 	char* line = ":. ( +   ) $akaslgl -+30230 /203 $c0 %ffee = 23849 134=$578ae $234235\n";
-	Symbol_t expect[21] = {SYM_COL, SYM_DOT, SYM_LPAR, SYM_PLUS, SYM_RPAR, SYM_ID, SYM_MIN, SYM_PLUS, SYM_INT, SYM_DIV, SYM_INT, SYM_ID, SYM_RIM, SYM_INT, SYM_EQU,
-			SYM_INT, SYM_INT, SYM_EQU, SYM_ID, SYM_ID, SYM_NOSYM};
+	Token_t expect[21] = {TOK_COL, TOK_DOT, TOK_LPAR, TOK_PLUS, TOK_RPAR, TOK_ID, TOK_MIN, TOK_PLUS, TOK_INT, TOK_DIV, TOK_INT, TOK_ID, TOK_RIM, TOK_INT, TOK_EQU,
+			TOK_INT, TOK_INT, TOK_EQU, TOK_ID, TOK_ID, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -167,7 +167,7 @@ static bool GetSymTest13(void)
 static bool GetSymTest14(void)
 {
 	char* line = "$akaslgl30230203 c0ffee 23849 u33232\n";
-	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_NOSYM};
+	Token_t expect[16] = {TOK_ID, TOK_INT, TOK_INT, TOK_INT, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -175,7 +175,7 @@ static bool GetSymTest14(void)
 static bool GetSymTest15(void)
 {
 	char* line = "$akaslgl30230203 c0ffee 23849u33232\n";
-	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_ERR, SYM_NOSYM};
+	Token_t expect[16] = {TOK_ID, TOK_INT, TOK_ERR, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -183,7 +183,7 @@ static bool GetSymTest15(void)
 static bool GetSymTest16(void)
 {
 	char* line = "$akaslgl30230203 c0ffee u33232$ioi 88888\n";
-	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_ERR, SYM_NOSYM};
+	Token_t expect[16] = {TOK_ID, TOK_INT, TOK_ERR, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -191,7 +191,7 @@ static bool GetSymTest16(void)
 static bool GetSymTest17(void)
 {
 	char* line = "$akaslgl30230203 c0ffee AAAu33232 88888\n";
-	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_ERR, SYM_NOSYM};
+	Token_t expect[16] = {TOK_ID, TOK_INT, TOK_ERR, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -199,7 +199,7 @@ static bool GetSymTest17(void)
 static bool GetSymTest18(void)
 {
 	char* line = "$akaslgl30230203 c0ffee AAA u33232 88888\n";
-	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_INT, SYM_NOSYM};
+	Token_t expect[16] = {TOK_ID, TOK_INT, TOK_INT, TOK_INT, TOK_INT, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -207,7 +207,7 @@ static bool GetSymTest18(void)
 static bool GetSymTest19(void)
 {
 	char* line = "$akaslgl30230203 c0ffee $ioiu332 88888\n";
-	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_ID, SYM_INT, SYM_NOSYM};
+	Token_t expect[16] = {TOK_ID, TOK_INT, TOK_ID, TOK_INT, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -215,7 +215,7 @@ static bool GetSymTest19(void)
 static bool GetSymTest20(void)
 {
 	char* line = "$akaslgl30230203 88888 u332c0ffee\n";
-	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_ERR, SYM_NOSYM};
+	Token_t expect[16] = {TOK_ID, TOK_INT, TOK_ERR, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -223,7 +223,7 @@ static bool GetSymTest20(void)
 static bool GetSymTest21(void)
 {
 	char* line = "$akaslgl30230203 c0ffee AAA U33232 88888\n";
-	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_INT, SYM_NOSYM};
+	Token_t expect[16] = {TOK_ID, TOK_INT, TOK_INT, TOK_INT, TOK_INT, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -231,7 +231,7 @@ static bool GetSymTest21(void)
 static bool GetSymTestInvalidId(void)
 {
 	char* line = "$akaslgl30230203 c0ffee AAA U33232 88888 $ad$bb 999\n";
-	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_INT, SYM_ERR, SYM_NOSYM};
+	Token_t expect[16] = {TOK_ID, TOK_INT, TOK_INT, TOK_INT, TOK_INT, TOK_ERR, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -239,7 +239,7 @@ static bool GetSymTestInvalidId(void)
 static bool GetSymTestInvalidId01(void)
 {
 	char* line = "$akaslgl30230203 c0ffee AAA U33232 88888 $ad $bb 999\n";
-	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_INT, SYM_ID, SYM_ID, SYM_INT, SYM_NOSYM};
+	Token_t expect[16] = {TOK_ID, TOK_INT, TOK_INT, TOK_INT, TOK_INT, TOK_ID, TOK_ID, TOK_INT, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -247,7 +247,7 @@ static bool GetSymTestInvalidId01(void)
 static bool GetSymQuote(void)
 {
 	char* line = "$akaslgl30230203 c0ffee AAA U33232 \"c0ffee\" 88888\n";
-	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_INT, SYM_INT, SYM_STR, SYM_INT, SYM_NOSYM};
+	Token_t expect[16] = {TOK_ID, TOK_INT, TOK_INT, TOK_INT, TOK_STR, TOK_INT, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -255,7 +255,7 @@ static bool GetSymQuote(void)
 static bool GetSymQuoteName(void)
 {
 	char* line = "$akaslgl30230203 c0ffee AAA U33232 \"asksl3kks982ls\" 88888\n";
-	Lexer_GetSym(line);
+	Lexer_GetTok(line);
 
 	char* getName = Lexer_GetIdName(4);
 
@@ -265,7 +265,7 @@ static bool GetSymQuoteName(void)
 static bool GetSymQuoteErr01(void)
 {
 	char* line = "$akaslgl30230203 c0ffee AAA U33232\"c0ffee\" 88888\n";
-	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_INT, SYM_ERR, SYM_NOSYM};
+	Token_t expect[16] = {TOK_ID, TOK_INT, TOK_INT, TOK_ERR, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -273,7 +273,7 @@ static bool GetSymQuoteErr01(void)
 static bool GetSymQuoteErr02(void)
 {
 	char* line = "$akaslgl30230203 c0ffee AAA $adg\"c0ffee\" 88888\n";
-	Symbol_t expect[16] = {SYM_ID, SYM_INT, SYM_INT, SYM_ERR, SYM_NOSYM};
+	Token_t expect[16] = {TOK_ID, TOK_INT, TOK_INT, TOK_ERR, TOK_NOSYM};
 
 	return Common(line, expect);
 }
@@ -281,7 +281,7 @@ static bool GetSymQuoteErr02(void)
 static bool GetAssingErr(void)
 {
 	char* line = "3234=5542\n";
-	Symbol_t expect[16] = {SYM_INT, SYM_EQU, SYM_INT, SYM_NOSYM};
+	Token_t expect[16] = {TOK_INT, TOK_EQU, TOK_INT, TOK_NOSYM};
 
 	return Common(line, expect);
 }

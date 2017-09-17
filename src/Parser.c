@@ -14,8 +14,8 @@
  * <statement> ::= <id> = <expr>
  *               | <expr>
  * <expr> ::= <str>
- *          | <addtive_expr>
  * 			| <id>(<expr>)
+ *          | <addtive_expr>
  * <multiplicative_expr> ::= <term>
  *                         | <multiplicative_expr> * <term>
  *                         | <multiplicative_expr> / <term>
@@ -43,15 +43,15 @@ static ParserNode_t* term(void);
 static char* getSymIdName(void);
 static uint64_t getSymIntVal(void);
 
-static Symbol_t* symStart;
-static Symbol_t *symCurrent;
+static Token_t* symStart;
+static Token_t *symCurrent;
 
 static bool syntaxError;
 
 #define SYNERR_RETURN		{syntaxError = true; return NULL;}
 #define CHK_SYNERR_RETURN	{if(syntaxError) {return NULL;}}
 
-ParserNode_t* Parser_Parse(Symbol_t* symlist)
+ParserNode_t* Parser_Parse(Token_t* symlist)
 {
 	syntaxError = false;
 	symStart = symlist;
@@ -59,7 +59,7 @@ ParserNode_t* Parser_Parse(Symbol_t* symlist)
 
 	ParserNode_t* parseResult = program();
 
-	if(*symCurrent != SYM_NOSYM)
+	if(*symCurrent != TOK_NOSYM)
 	{
 		// syntax error
 		return NULL;
@@ -127,12 +127,12 @@ static ParserNode_t* statement(void)
 {
 	ParserNode_t* nodeStatement;
 
-	if(*symCurrent == SYM_ID)
+	if(*symCurrent == TOK_ID)
 	{
 		char* idName = getSymIdName();
 		symCurrent++;
 
-		if(*symCurrent == SYM_EQU)
+		if(*symCurrent == TOK_EQU)
 		{
 			ParserNode_t* nodeId = newNode(BNF_var);
 			nodeId->name = idName;
@@ -163,13 +163,13 @@ static ParserNode_t* statement(void)
 }
 
 // <expr> ::= <str>
-//          | <addtive_expr>
 //          | <id>(<expr>)
+//          | <addtive_expr>
 static ParserNode_t* expr(void)
 {
 	ParserNode_t* nodeExpr;
 
-	if(*symCurrent == SYM_STR)
+	if(*symCurrent == TOK_STR)
 	{
 		nodeExpr = newNode(BNF_str);
 		nodeExpr->name = getSymIdName();
@@ -198,9 +198,9 @@ static ParserNode_t* additiv_expr(void)
 	nodeAdditiv = mutipli_expr();
 	CHK_SYNERR_RETURN;
 
-	while(*symCurrent == SYM_PLUS || *symCurrent == SYM_MIN)
+	while(*symCurrent == TOK_PLUS || *symCurrent == TOK_MIN)
 	{
-		ParserNode_t* nodeAdd = newNode((*symCurrent == SYM_PLUS)?BNF_add:BNF_sub);
+		ParserNode_t* nodeAdd = newNode((*symCurrent == TOK_PLUS)?BNF_add:BNF_sub);
 		nodeAdd->child1 = nodeAdditiv;
 
 		symCurrent++;
@@ -225,18 +225,18 @@ static ParserNode_t* mutipli_expr(void)
 	nodeMutipli = term();
 	CHK_SYNERR_RETURN;
 
-	while(*symCurrent == SYM_MUL || *symCurrent == SYM_DIV || *symCurrent == SYM_RIM)
+	while(*symCurrent == TOK_MUL || *symCurrent == TOK_DIV || *symCurrent == TOK_RIM)
 	{
 		ParserNode_t* nodeMul;
-		if(*symCurrent == SYM_MUL)
+		if(*symCurrent == TOK_MUL)
 		{
 			nodeMul = newNode(BNF_mul);
 		}
-		else if(*symCurrent == SYM_DIV)
+		else if(*symCurrent == TOK_DIV)
 		{
 			nodeMul = newNode(BNF_div);
 		}
-		else if(*symCurrent == SYM_RIM)
+		else if(*symCurrent == TOK_RIM)
 		{
 			nodeMul = newNode(BNF_rem);
 		}
@@ -261,24 +261,24 @@ static ParserNode_t* term(void)
 {
 	ParserNode_t* nodeTerm;
 
-	if(*symCurrent == SYM_ID)
+	if(*symCurrent == TOK_ID)
 	{
 		nodeTerm = newNode(BNF_var);
 		nodeTerm->name = getSymIdName();
 		symCurrent++;
 	}
-	else if(*symCurrent == SYM_INT)
+	else if(*symCurrent == TOK_INT)
 	{
 		nodeTerm = newNode(BNF_const);
 		nodeTerm->val = getSymIntVal();
 		symCurrent++;
 	}
-	else if(*symCurrent == SYM_LPAR)
+	else if(*symCurrent == TOK_LPAR)
 	{
 		symCurrent++;
 		nodeTerm = expr();
 		CHK_SYNERR_RETURN;
-		if(*symCurrent == SYM_RPAR)
+		if(*symCurrent == TOK_RPAR)
 		{
 			symCurrent++;
 		}

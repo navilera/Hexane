@@ -46,7 +46,7 @@ static void serialize(CodegenList_t* resultlist, char* target_out)
 
 static bool common(char* line, uint64_t* expectlist)
 {
-	Symbol_t* symlist = Lexer_GetSym(line);
+	Token_t* symlist = Lexer_GetTok(line);
 	ParserNode_t* parseTree = Parser_Parse(symlist);
 	CodegenList_t* codelist = CodeGen_Compile(parseTree);
 

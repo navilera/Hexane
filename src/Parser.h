@@ -20,6 +20,7 @@ typedef enum {
 	BNF_var,		// 8
 	BNF_const,		// 9
 	BNF_str,		// A
+	BNF_call,		// B
 	NumberOfBnfs
 } Bnf_t;
 
@@ -32,7 +33,7 @@ typedef struct _parser_node_t_
 	char* name;
 } ParserNode_t;
 
-ParserNode_t* Parser_Parse(Symbol_t* symlist);
+ParserNode_t* Parser_Parse(Token_t* symlist);
 void          Parser_Release(ParserNode_t* parseResult);
 
 #endif /* SRC_PARSER_H_ */

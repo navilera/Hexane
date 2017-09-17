@@ -12,7 +12,7 @@
 #include "CodeGen.h"
 #include "VirtualMachine.h"
 
-static bool checkInvalidSymbol(Symbol_t* symlist, const char* line);
+static bool checkInvalidSymbol(Token_t* symlist, const char* line);
 
 int main(int argc, char* argv[])
 {
@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 	{
 		char* line = Shell_GetLine();
 
-		Symbol_t* symlist = Lexer_GetSym(line);
+		Token_t* symlist = Lexer_GetTok(line);
 		if(!checkInvalidSymbol(symlist, line))
 		{
 			continue;
@@ -59,11 +59,11 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
-static bool checkInvalidSymbol(Symbol_t* symlist, const char* line)
+static bool checkInvalidSymbol(Token_t* symlist, const char* line)
 {
-	for(Symbol_t *sym = symlist; *sym != SYM_NOSYM ; ++sym)
+	for(Token_t *sym = symlist; *sym != TOK_NOSYM ; ++sym)
 	{
-		if(*sym == SYM_ERR)
+		if(*sym == TOK_ERR)
 		{
 			printf("Invalid Token\n");
 			printf("%s", line);

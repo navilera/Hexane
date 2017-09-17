@@ -28,7 +28,7 @@ POST_TEST_END
 
 static bool commonTestType(char* line, Bnf_t testType, int* targetDepth)
 {
-	Symbol_t* symlist = Lexer_GetSym(line);
+	Token_t* symlist = Lexer_GetTok(line);
 	ParserNode_t* parseTree = Parser_Parse(symlist);
 	ParserNode_t* parseTreeIndex = parseTree;
 	for(int* idx = targetDepth ; *idx ; ++idx)
@@ -51,7 +51,7 @@ static bool commonTestType(char* line, Bnf_t testType, int* targetDepth)
 
 static bool commonTestVal(char* line, uint64_t testVal, int* targetDepth)
 {
-	Symbol_t* symlist = Lexer_GetSym(line);
+	Token_t* symlist = Lexer_GetTok(line);
 	ParserNode_t* parseTree = Parser_Parse(symlist);
 	ParserNode_t* parseTreeIndex = parseTree;
 	for(int* idx = targetDepth ; *idx ; ++idx)
@@ -75,7 +75,7 @@ static bool commonTestVal(char* line, uint64_t testVal, int* targetDepth)
 
 static bool commonTestName(char* line, char* testName, int* targetDepth)
 {
-	Symbol_t* symlist = Lexer_GetSym(line);
+	Token_t* symlist = Lexer_GetTok(line);
 	ParserNode_t* parseTree = Parser_Parse(symlist);
 	ParserNode_t* parseTreeIndex = parseTree;
 	for(int* idx = targetDepth ; *idx ; ++idx)
@@ -220,7 +220,7 @@ TESTCASE(complexExpr_Id_Test03, "Complex Expression ID Test03")
 TESTCASE(syntaxError01, "Syntax Error Test01")
 {
 	char* line = "$res = c0ffee + 15 - (10 + $me) * 30+AB = $sx+(60+CD)*EFF*AD\n";
-	Symbol_t* symlist = Lexer_GetSym(line);
+	Token_t* symlist = Lexer_GetTok(line);
 	ParserNode_t* parseTree = Parser_Parse(symlist);
 
 	ASSERT((parseTree == NULL), ASSERTMSG_INT_FAIL(NULL, parseTree));
@@ -229,7 +229,7 @@ TESTCASE(syntaxError01, "Syntax Error Test01")
 TESTCASE(syntaxError02, "Syntax Error Test02")
 {
 	char* line = "$res = c0ffee + 15 - (10 + $me) * 30+ABM + $sx+(60+CD)*EFF*AD\n";
-	Symbol_t* symlist = Lexer_GetSym(line);
+	Token_t* symlist = Lexer_GetTok(line);
 	ParserNode_t* parseTree = Parser_Parse(symlist);
 
 	ASSERT((parseTree == NULL), ASSERTMSG_INT_FAIL(NULL, parseTree));
@@ -266,8 +266,24 @@ TESTCASE(stringExprTest_str04, "String test04")
 TESTCASE(assignErrTest01, "Assign Err")
 {
 	char* line = "324252=3432\n";
-	Symbol_t* symlist = Lexer_GetSym(line);
+	Token_t* symlist = Lexer_GetTok(line);
 	ParserNode_t* parseTree = Parser_Parse(symlist);
 
 	ASSERT((parseTree == NULL), ASSERTMSG_INT_FAIL(NULL, parseTree));
 }
+
+/**
+TESTCASE(functionCallTest01, "Function call test01")
+{
+	char* line = "dec(c0ffee)\n";
+	int depth[30] = {1, 1, 0};
+	return commonTestType(line, BNF_call, depth);
+}
+
+TESTCASE(functionCallTest02, "Function call test02")
+{
+	char* line = "$decint = dec(c0ffee)\n";
+	int depth[30] = {1, 2, 0};
+	return commonTestType(line, BNF_call, depth);
+}
+**/

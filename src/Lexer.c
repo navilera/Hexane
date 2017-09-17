@@ -9,48 +9,48 @@
 #include "Lexer.h"
 
 /*
- * SYM_INT	[0-9a-fA-F]+ | [uU][0-9]	// default integer is hex value
- * SYM_ID	$[0-9a-zA-z_]+
- * SYM_STR	".*"
- * SYM_COL 	:
- * SYM_DOT	.
- * SYM_LPAR (
- * SYM_RPAR )
- * SYM_PLUS +
- * SYM_MIN	-
- * SYM_MUL	*
- * SYM_DIV	/
- * SYM_RIM	%
- * SYM_EQU	=
+ * TOK_INT	[0-9a-fA-F]+ | [uU][0-9]	// default integer is hex value
+ * TOK_ID	$[0-9a-zA-z_]+
+ * TOK_STR	".*"
+ * TOK_COL 	:
+ * TOK_DOT	.
+ * TOK_LPAR (
+ * TOK_RPAR )
+ * TOK_PLUS +
+ * TOK_MIN	-
+ * TOK_MUL	*
+ * TOK_DIV	/
+ * TOK_RIM	%
+ * TOK_EQU	=
  */
 
-static Symbol_t symbolBuffer[LEX_SYM_NUM_LIMIT];
-static uint64_t intValBuffer[LEX_SYM_NUM_LIMIT];
-static char*	idNameBuffer[LEX_SYM_NUM_LIMIT];
+static Token_t tokenBuffer[LEX_TOK_NUM_LIMIT];
+static uint64_t intValBuffer[LEX_TOK_NUM_LIMIT];
+static char*	idNameBuffer[LEX_TOK_NUM_LIMIT];
 static uint32_t symErrorPosition;
 
-static char		idSymBuffer[LEX_ID_SYM_LEN];
+static char		idTokBuffer[LEX_ID_TOK_LEN];
 
-static void initAllSymbolBuffer(void);
+static void initAllTokenBuffer(void);
 
 static bool getHexInt(char** chBack, uint64_t* intValBack);
 static bool getDecInt(char** chBack, uint64_t* intValBack);
-static bool getId(char** chBack, char** idSymStr);
-static bool getStr(char** chBack, char** idSymStr);
-static bool cancelPrevSymbol(int index, char* ch, char* line);
+static bool getId(char** chBack, char** idTokStr);
+static bool getStr(char** chBack, char** idTokStr);
+static bool cancelPrevToken(int index, char* ch, char* line);
 static void setError(int index, char* ch, char* line);
 
-#define AddSimpleSym(sym) {symbolBuffer[index] = sym; ++index; ++ch;}
+#define AddSimpleTok(tok) {tokenBuffer[index] = tok; ++index; ++ch;}
 
-Symbol_t* Lexer_GetSym(char* line)
+Token_t* Lexer_GetTok(char* line)
 {
 	int index = 0;
 	char* ch = '\0';
 
 	uint64_t intVal = 0;
-	char* idSymStr = NULL;
+	char* idTokStr = NULL;
 
-	initAllSymbolBuffer();
+	initAllTokenBuffer();
 
 	ch = line;
 	while(*ch != '\0')
@@ -60,117 +60,117 @@ Symbol_t* Lexer_GetSym(char* line)
 			++ch;
 			continue;
 		}
-		else if(*ch == ':') {AddSimpleSym(SYM_COL);}
-		else if(*ch == '.') {AddSimpleSym(SYM_DOT);}
-		else if(*ch == '(') {AddSimpleSym(SYM_LPAR);}
-		else if(*ch == ')') {AddSimpleSym(SYM_RPAR);}
-		else if(*ch == '+') {AddSimpleSym(SYM_PLUS);}
-		else if(*ch == '-') {AddSimpleSym(SYM_MIN);}
-		else if(*ch == '*') {AddSimpleSym(SYM_MUL);}
-		else if(*ch == '/') {AddSimpleSym(SYM_DIV);}
-		else if(*ch == '%') {AddSimpleSym(SYM_RIM);}
-		else if(*ch == '=') {AddSimpleSym(SYM_EQU);}
+		else if(*ch == ':') {AddSimpleTok(TOK_COL);}
+		else if(*ch == '.') {AddSimpleTok(TOK_DOT);}
+		else if(*ch == '(') {AddSimpleTok(TOK_LPAR);}
+		else if(*ch == ')') {AddSimpleTok(TOK_RPAR);}
+		else if(*ch == '+') {AddSimpleTok(TOK_PLUS);}
+		else if(*ch == '-') {AddSimpleTok(TOK_MIN);}
+		else if(*ch == '*') {AddSimpleTok(TOK_MUL);}
+		else if(*ch == '/') {AddSimpleTok(TOK_DIV);}
+		else if(*ch == '%') {AddSimpleTok(TOK_RIM);}
+		else if(*ch == '=') {AddSimpleTok(TOK_EQU);}
 		else if(*ch == '\n')
 		{
-			return symbolBuffer;
+			return tokenBuffer;
 		}
 		else if((*ch >= '0' && *ch <= '9') || (*ch >= 'a' && *ch <= 'f') || (*ch >= 'A' && *ch <= 'F'))
 		{
 			// cancel previous symbol if invalid token happens
-			if(cancelPrevSymbol(index, ch, line))
+			if(cancelPrevToken(index, ch, line))
 			{
-				return symbolBuffer;
+				return tokenBuffer;
 			}
 
 			if(getHexInt(&ch, &intVal))
 			{
 				intValBuffer[index] = intVal;
-				symbolBuffer[index] = SYM_INT;
+				tokenBuffer[index] = TOK_INT;
 				++index;
 			}
 		}
 		else if(*ch == '$')
 		{
 			// cancel previous symbol if invalid token happens
-			if(cancelPrevSymbol(index, ch, line))
+			if(cancelPrevToken(index, ch, line))
 			{
-				return symbolBuffer;
+				return tokenBuffer;
 			}
 
-			if(getId(&ch, &idSymStr))
+			if(getId(&ch, &idTokStr))
 			{
-				idNameBuffer[index] = idSymStr;
-				symbolBuffer[index] = SYM_ID;
+				idNameBuffer[index] = idTokStr;
+				tokenBuffer[index] = TOK_ID;
 				++index;
 			}
 			else
 			{
 				setError(index, ch, line);
-				return symbolBuffer;
+				return tokenBuffer;
 			}
 		}
 		else if(*ch == '"')
 		{
 			// cancel previous symbol if invalid token happens
-			if(cancelPrevSymbol(index, ch, line))
+			if(cancelPrevToken(index, ch, line))
 			{
-				return symbolBuffer;
+				return tokenBuffer;
 			}
-			if(getStr(&ch, &idSymStr))
+			if(getStr(&ch, &idTokStr))
 			{
-				idNameBuffer[index] = idSymStr;
-				symbolBuffer[index] = SYM_STR;
+				idNameBuffer[index] = idTokStr;
+				tokenBuffer[index] = TOK_STR;
 				++index;
 			}
 			else
 			{
 				setError(index, ch, line);
-				return symbolBuffer;
+				return tokenBuffer;
 			}
 		}
 		else if(*ch == 'u' || *ch == 'U')
 		{
 			// cancel previous symbol if invalid token happens
-			if(cancelPrevSymbol(index, ch, line))
+			if(cancelPrevToken(index, ch, line))
 			{
-				return symbolBuffer;
+				return tokenBuffer;
 			}
 
 			if(getDecInt(&ch, &intVal))
 			{
 				intValBuffer[index] = intVal;
-				symbolBuffer[index] = SYM_INT;
+				tokenBuffer[index] = TOK_INT;
 				++index;
 			}
 			else
 			{
 				setError(index, ch, line);
-				return symbolBuffer;
+				return tokenBuffer;
 			}
 		}
 		else
 		{
 			// cancel previous symbol if invalid token happens
-			if(cancelPrevSymbol(index, ch, line))
+			if(cancelPrevToken(index, ch, line))
 			{
-				return symbolBuffer;
+				return tokenBuffer;
 			}
 			setError(index, ch, line);
-			return symbolBuffer;
+			return tokenBuffer;
 		}
 	}
 
-	return symbolBuffer;
+	return tokenBuffer;
 }
 
-uint64_t Lexer_GetIntVal(uint32_t symIndex)
+uint64_t Lexer_GetIntVal(uint32_t tokIndex)
 {
-	return intValBuffer[symIndex];
+	return intValBuffer[tokIndex];
 }
 
-char* Lexer_GetIdName(uint32_t symIndex)
+char* Lexer_GetIdName(uint32_t tokIndex)
 {
-	return idNameBuffer[symIndex];
+	return idNameBuffer[tokIndex];
 }
 
 uint32_t Lexer_GetErrorPos(void)
@@ -178,9 +178,9 @@ uint32_t Lexer_GetErrorPos(void)
 	return symErrorPosition;
 }
 
-static void initAllSymbolBuffer(void)
+static void initAllTokenBuffer(void)
 {
-	for(int i = 0; i < LEX_SYM_NUM_LIMIT; ++i)
+	for(int i = 0; i < LEX_TOK_NUM_LIMIT; ++i)
 	{
 		char* idNamePtr = idNameBuffer[i];
 		if(idNamePtr != NULL)
@@ -189,7 +189,7 @@ static void initAllSymbolBuffer(void)
 		}
 	}
 
-	memset(symbolBuffer, 0, sizeof(symbolBuffer));
+	memset(tokenBuffer, 0, sizeof(tokenBuffer));
 	memset(intValBuffer, 0, sizeof(intValBuffer));
 	memset(idNameBuffer, 0, sizeof(idNameBuffer));
 
@@ -253,27 +253,27 @@ static bool getDecInt(char** chBack, uint64_t* intValBack)
 	return false;
 }
 
-static bool getId(char** chBack, char** idSymStr)
+static bool getId(char** chBack, char** idTokStr)
 {
 	char* ch = *chBack;
 
 	int i = 0;
 
-	memset(idSymBuffer, 0, sizeof(idSymBuffer));
+	memset(idTokBuffer, 0, sizeof(idTokBuffer));
 	++ch;
 
 	if((*ch >= '0' && *ch <= '9') || (*ch >= 'a' && *ch <= 'z') || (*ch >= 'A' && *ch <= 'Z') || (*ch == '_'))
 	{
 		while((*ch >= '0' && *ch <= '9') || (*ch >= 'a' && *ch <= 'z') || (*ch >= 'A' && *ch <= 'Z') || (*ch == '_'))
 		{
-			idSymBuffer[i++] = *ch;
+			idTokBuffer[i++] = *ch;
 			++ch;
 		}
-		idSymBuffer[i] = '\0';
+		idTokBuffer[i] = '\0';
 
-		*idSymStr = (char*)malloc(strlen(idSymBuffer) + 1);
-		memset(*idSymStr, 0, strlen(idSymBuffer) + 1);
-		memcpy(*idSymStr, idSymBuffer, strlen(idSymBuffer));
+		*idTokStr = (char*)malloc(strlen(idTokBuffer) + 1);
+		memset(*idTokStr, 0, strlen(idTokBuffer) + 1);
+		memcpy(*idTokStr, idTokBuffer, strlen(idTokBuffer));
 
 		*chBack = ch;
 
@@ -283,27 +283,27 @@ static bool getId(char** chBack, char** idSymStr)
 	return false;
 }
 
-static bool getStr(char** chBack, char** idSymStr)
+static bool getStr(char** chBack, char** idTokStr)
 {
 	char* ch = *chBack;
 
 	int i = 0;
 
-	memset(idSymBuffer, 0, sizeof(idSymBuffer));
+	memset(idTokBuffer, 0, sizeof(idTokBuffer));
 	++ch;
 
 	if(*ch != '"')
 	{
 		while(*ch != '"')
 		{
-			idSymBuffer[i++] = *ch;
+			idTokBuffer[i++] = *ch;
 			++ch;
 		}
-		idSymBuffer[i] = '\0';
+		idTokBuffer[i] = '\0';
 
-		*idSymStr = (char*)malloc(strlen(idSymBuffer) + 1);
-		memset(*idSymStr, 0, strlen(idSymBuffer) + 1);
-		memcpy(*idSymStr, idSymBuffer, strlen(idSymBuffer));
+		*idTokStr = (char*)malloc(strlen(idTokBuffer) + 1);
+		memset(*idTokStr, 0, strlen(idTokBuffer) + 1);
+		memcpy(*idTokStr, idTokBuffer, strlen(idTokBuffer));
 
 		++ch;
 		*chBack = ch;
@@ -314,10 +314,10 @@ static bool getStr(char** chBack, char** idSymStr)
 	return false;
 }
 
-static bool cancelPrevSymbol(int index, char* ch, char* line)
+static bool cancelPrevToken(int index, char* ch, char* line)
 {
-	if(symbolBuffer[index-1] == SYM_INT ||
-	symbolBuffer[index-1] == SYM_ID)
+	if(tokenBuffer[index-1] == TOK_INT ||
+	tokenBuffer[index-1] == TOK_ID)
 	{
 		// cancel in this case
 		// 390acd0adskw
@@ -338,6 +338,6 @@ static bool cancelPrevSymbol(int index, char* ch, char* line)
 
 static void setError(int index, char* ch, char* line)
 {
-	symbolBuffer[index] = SYM_ERR;
+	tokenBuffer[index] = TOK_ERR;
 	symErrorPosition = (uint32_t)(ch - line);
 }

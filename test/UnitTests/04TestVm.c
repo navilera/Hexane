@@ -20,7 +20,7 @@ REGISTER_SUITE_AUTO(VMTest, "04 Virtual Machine Test")
 
 static VmStack_t* common(char* line)
 {
-	Symbol_t* symlist = Lexer_GetSym(line);
+	Token_t* symlist = Lexer_GetTok(line);
 	ParserNode_t* parseTree = Parser_Parse(symlist);
 	CodegenList_t* codelist = CodeGen_Compile(parseTree);
 	VmStack_t* sp = Vm_Run(codelist);
@@ -36,7 +36,7 @@ static bool testVal(char* line, char* expect)
 
 static bool assignVarStackEmpty(char* line)
 {
-	Symbol_t* symlist = Lexer_GetSym(line);
+	Token_t* symlist = Lexer_GetTok(line);
 	ParserNode_t* parseTree = Parser_Parse(symlist);
 	CodegenList_t* codelist = CodeGen_Compile(parseTree);
 	VmStack_t* sp = Vm_Run(codelist);
@@ -46,7 +46,7 @@ static bool assignVarStackEmpty(char* line)
 
 static bool expectErr(char* line)
 {
-	Symbol_t* symlist = Lexer_GetSym(line);
+	Token_t* symlist = Lexer_GetTok(line);
 	ParserNode_t* parseTree = Parser_Parse(symlist);
 	CodegenList_t* codelist = CodeGen_Compile(parseTree);
 	VmStack_t* sp = Vm_Run(codelist);
