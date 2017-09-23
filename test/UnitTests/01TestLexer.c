@@ -318,6 +318,16 @@ static bool FunctionCall03_err01(void)
 	return Common(line, expect);
 }
 
+static bool GetFunctionName(void)
+{
+	char* line = "$dec = c0ffee(c0ffee)\n";
+	Lexer_GetTok(line);
+
+	char* getName = Lexer_GetIdName(2);
+
+	ASSERT(ASSERT_CMPSTR("c0ffee", getName), ASSERTMSG_STR_FAIL("c0ffee", getName));
+}
+
 static void Init(TestSuite_t* suite)
 {
     suite->name = suiteName;
@@ -356,6 +366,7 @@ static void Init(TestSuite_t* suite)
     AddTestCase(suite, FunctionCall01, "Function call with spaces");
     AddTestCase(suite, FunctionCall02, "Function call weird name but Okay");
     AddTestCase(suite, FunctionCall03_err01, "Function call name error");
+    AddTestCase(suite, GetFunctionName, "Function call get function name");
 }
 
 REGISTER_SUITE_FUNC(LexerTest, Init)

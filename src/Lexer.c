@@ -79,12 +79,13 @@ Token_t* Lexer_GetTok(char* line)
 		}
 		else if((skipFunctionName == false) && ((*ch >= 'a' && *ch <= 'z') || (*ch >= 'A' && *ch <= 'Z') || (*ch == '@') || (*ch == '_')))
 		{
+			int i = 0;
 			char* chBackup = ch;
 
 			memset(idTokBuffer, 0, sizeof(idTokBuffer));
+			idTokBuffer[i++] = *ch;
 			++ch;
 
-			int i = 0;
 			while((*ch >= '0' && *ch <= '9') || (*ch >= 'a' && *ch <= 'z') || (*ch >= 'A' && *ch <= 'Z') || (*ch == '@') || (*ch == '_'))
 			{
 				idTokBuffer[i++] = *ch;
