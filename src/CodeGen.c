@@ -78,6 +78,11 @@ static void compiler(ParserNode_t* parseNode)
 		addObjCode(Code_Push, CodeType_Instr);
 		addObjVal(parseNode->val, CodeType_Int);
 		break;
+	case BNF_call:
+		compiler(parseNode->child1);
+		addObjCode(Code_Jmp, CodeType_Instr);
+		addObjName(parseNode->name, CodeType_Addr);
+		break;
 	case NumberOfBnfs: break;
 	}
 }

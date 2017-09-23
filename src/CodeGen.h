@@ -19,6 +19,7 @@ typedef enum {
 	Code_Mul,
 	Code_Div,
 	Code_Mod,
+	Code_Jmp,
 	Code_Halt,
 	NumberOfCodes
 }ItmdCode_t;

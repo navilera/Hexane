@@ -48,7 +48,20 @@ static bool common(char* line, uint64_t* expectlist)
 {
 	Token_t* symlist = Lexer_GetTok(line);
 	ParserNode_t* parseTree = Parser_Parse(symlist);
+
+	if(parseTree == NULL)
+	{
+		printf("Syntax error\n");
+		return false;
+	}
+
 	CodegenList_t* codelist = CodeGen_Compile(parseTree);
+
+	if(codelist == NULL)
+	{
+		printf("Compile error\n");
+		return false;
+	}
 
 	CodegenList_t expectCode[CODE_NUM_LIMIT] = {0};
 
@@ -64,9 +77,9 @@ static bool common(char* line, uint64_t* expectlist)
 	{
 		expectCode[i].val = expectlist[i];
 
-		if(expectlist[i] == Code_Str || expectlist[i] == Code_Ldr)
+		if(expectlist[i] == Code_Str || expectlist[i] == Code_Ldr || expectlist[i] == Code_Jmp)
 		{
-			expectCode[i+1].type = CodeType_Str;
+			expectCode[i+1].type = CodeType_Addr;
 		}
 
 		if(expectlist[i] == Code_Push && enablePushStr)
@@ -141,6 +154,22 @@ TESTCASE(codegenStr01, "String01")
 {
 	char* line = "$kkkk = \"asdlkgjearh4x\"\n";
 	uint64_t expect[64] = {ENABLE_PUSH_STR, Code_Push, (uint64_t)"asdlkgjearh4x", Code_Str, (uint64_t)"kkkk", Code_Pop, Code_Halt, 0};
+
+	return common(line, expect);
+}
+
+TESTCASE(functionCall01, "function call test 01")
+{
+	char* line = "dec(c0ffee)\n";
+	uint64_t expect[64] = {Code_Push, 0xC0FFEE, Code_Jmp, (uint64_t)"dec", Code_Halt, 0};
+
+	return common(line, expect);
+}
+
+TESTCASE(functionCall02, "function call test 02")
+{
+	char* line = "$decint = dec(c0ffee)\n";
+	uint64_t expect[64] = {Code_Push, 0xC0FFEE, Code_Jmp, (uint64_t)"dec", Code_Str, (uint64_t)"decint", Code_Pop, Code_Halt, 0};
 
 	return common(line, expect);
 }
