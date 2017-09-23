@@ -30,6 +30,13 @@ static bool commonTestType(char* line, Bnf_t testType, int* targetDepth)
 {
 	Token_t* symlist = Lexer_GetTok(line);
 	ParserNode_t* parseTree = Parser_Parse(symlist);
+
+	if(parseTree == NULL)
+	{
+		printf("Syntax error\n");
+		return false;
+	}
+
 	ParserNode_t* parseTreeIndex = parseTree;
 	for(int* idx = targetDepth ; *idx ; ++idx)
 	{
@@ -272,11 +279,11 @@ TESTCASE(assignErrTest01, "Assign Err")
 	ASSERT((parseTree == NULL), ASSERTMSG_INT_FAIL(NULL, parseTree));
 }
 
-/**
+
 TESTCASE(functionCallTest01, "Function call test01")
 {
 	char* line = "dec(c0ffee)\n";
-	int depth[30] = {1, 1, 0};
+	int depth[30] = {1, 0};
 	return commonTestType(line, BNF_call, depth);
 }
 
@@ -286,4 +293,4 @@ TESTCASE(functionCallTest02, "Function call test02")
 	int depth[30] = {1, 2, 0};
 	return commonTestType(line, BNF_call, depth);
 }
-**/
+

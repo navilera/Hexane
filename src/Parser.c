@@ -41,7 +41,7 @@ static ParserNode_t* additiv_expr(void);
 static ParserNode_t* mutipli_expr(void);
 static ParserNode_t* term(void);
 
-static char* getSymIdName(void);
+static char* getTokIdName(void);
 static uint64_t getSymIntVal(void);
 
 static Token_t* tokStart;
@@ -80,7 +80,7 @@ void Parser_Release(ParserNode_t* parseResult)
 	clearAllNode(parseResult);
 }
 
-static char* getSymIdName(void)
+static char* getTokIdName(void)
 {
 	int index = (int)(tokCurrent - tokStart);
 	return Lexer_GetIdName(index);
@@ -130,7 +130,7 @@ static ParserNode_t* statement(void)
 
 	if(*tokCurrent == TOK_ID)
 	{
-		char* idName = getSymIdName();
+		char* idName = getTokIdName();
 		tokCurrent++;
 
 		if(*tokCurrent == TOK_EQU)
@@ -173,13 +173,35 @@ static ParserNode_t* expr(void)
 	if(*tokCurrent == TOK_STR)
 	{
 		nodeExpr = newNode(BNF_str);
-		nodeExpr->name = getSymIdName();
+		nodeExpr->name = getTokIdName();
 		tokCurrent++;
 	}
-//	else if(*symCurrent == TOK_FUNC)
-//	{
-
-//	}
+	else if(*tokCurrent == TOK_FUNC)
+	{
+		char* funcName = getTokIdName();
+		tokCurrent++;
+		if(*tokCurrent == TOK_LPAR)
+		{
+			tokCurrent++;
+			ParserNode_t* subExpr = expr();
+			CHK_SYNERR_RETURN;
+			if(*tokCurrent == TOK_RPAR)
+			{
+				nodeExpr = newNode(BNF_call);
+				nodeExpr->name = funcName;
+				nodeExpr->child1 = subExpr;
+				tokCurrent++;
+			}
+			else
+			{
+				SYNERR_RETURN;
+			}
+		}
+		else
+		{
+			SYNERR_RETURN;
+		}
+	}
 	else
 	{
 		nodeExpr = additiv_expr();
@@ -265,7 +287,7 @@ static ParserNode_t* term(void)
 	if(*tokCurrent == TOK_ID)
 	{
 		nodeTerm = newNode(BNF_var);
-		nodeTerm->name = getSymIdName();
+		nodeTerm->name = getTokIdName();
 		tokCurrent++;
 	}
 	else if(*tokCurrent == TOK_INT)
