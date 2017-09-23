@@ -224,5 +224,6 @@ static void BeautiPrint_GetCurrentPadLen(char* name, int maxLen)
 	{
 		putchar('.');
 	}
+	fflush(stdout);
 }
 
