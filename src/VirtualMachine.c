@@ -10,6 +10,7 @@
 #include "Parser.h"
 #include "CodeGen.h"
 #include "VirtualMachine.h"
+#include "BuiltInFunction.h"
 
 static VmSymbolTable_t symbolTable[VM_SYMTBLNUM] = {0};
 static VmStack_t stack[VM_STACKSIZE];
@@ -20,6 +21,7 @@ static char resultStr[VM_RETSTRLEN];
 static bool storeSymbolTable(char* name, VmStack_t spval);
 static int loadSymbolTable(char* name, VmStack_t* spval_out);
 static void errorMsg(char* errMsg);
+static int builtInFunction(char* funcName, VmStack_t* currentSp_in_out);
 
 
 VmStack_t* Vm_Run(CodegenList_t* code)
@@ -77,6 +79,26 @@ VmStack_t* Vm_Run(CodegenList_t* code)
 			break;
 		case Code_Mod:
 			sp[-2].val = sp[-2].val % sp[-1].val; --sp;
+			break;
+		case Code_Jmp:
+		{
+			int popCount = builtInFunction((char*)pc->val, sp);
+			if(popCount < 0)
+			{
+				VmStack_t funcAddr;
+				if(loadSymbolTable((char*)pc->val, &funcAddr) == -1)
+				{
+					errorMsg(VM_ERR_undefined_function);
+					return NULL;	// error
+				}
+				pc = (CodegenList_t*)funcAddr.val;
+			}
+			else
+			{
+				sp -= popCount;
+			}
+		}
+			pc++;
 			break;
 		case Code_Halt:
 			return sp;
@@ -182,7 +204,7 @@ static int loadSymbolTable(char* name, VmStack_t* spval_out)
 	{
 		if(symbolTable[i].name != NULL)
 		{
-			if((strncmp(symbolTable[i].name, name, strlen(name)) == 0) && (strlen(symbolTable[i].name) == strlen(name)))
+			if(STR_CMP(symbolTable[i].name, name))
 			{
 				*spval_out = symbolTable[i].val;
 				return i;
@@ -191,5 +213,27 @@ static int loadSymbolTable(char* name, VmStack_t* spval_out)
 	}
 
 	return (-1);
+}
+
+static int builtInFunction(char* funcName, VmStack_t* currentSp_in_out)
+{
+	int popSpNum = 0;
+
+	switch(BuiltInFunc_Check(funcName))
+	{
+	case BLTINFUN_dec:
+	{
+		char* decStr = BuiltInFunc_Dec(currentSp_in_out[-1].val);
+		currentSp_in_out[-1].val = (uint64_t)decStr;
+		currentSp_in_out[-1].type = VmStackType_Str;
+		popSpNum = 0;
+	}
+		break;
+	case BLTINFUN_No:
+	default:
+		return -1;
+	}
+
+	return popSpNum;
 }
 

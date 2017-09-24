@@ -40,5 +40,6 @@ char* Vm_GetErrorMsg(void);
 #define VM_ERR_critical_error			"Critical Error!!!"
 #define VM_ERR_not_enough_symbol_table	"Not enough symbol table entry number"
 #define VM_ERR_Invalid_variable			"Invalid variable"
+#define VM_ERR_undefined_function		"Undefined function"
 
 #endif /* SRC_VIRTUALMACHINE_H_ */

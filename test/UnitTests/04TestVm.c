@@ -22,8 +22,26 @@ static VmStack_t* common(char* line)
 {
 	Token_t* symlist = Lexer_GetTok(line);
 	ParserNode_t* parseTree = Parser_Parse(symlist);
+	if(parseTree == NULL)
+	{
+		printf("Syntax error\n");
+		return false;
+	}
+
 	CodegenList_t* codelist = CodeGen_Compile(parseTree);
+	if(codelist == NULL)
+	{
+		printf("Compile error\n");
+		return false;
+	}
+
 	VmStack_t* sp = Vm_Run(codelist);
+
+	if(sp == NULL)
+	{
+		printf("VM error: %s\n", Vm_GetErrorMsg());
+		return false;
+	}
 
 	return sp;
 }
@@ -122,4 +140,10 @@ TESTCASE(Vm10_string02, "VM string test02")
 	char* nextline = "$adkels\n";
 	common(line);
 	return testVal(nextline, "\"dfg3ds34t\"");
+}
+
+TESTCASE(Vm11_builtInFunc01, "VM built-in function test01")
+{
+	char* line = "dec(c0ffee)\n";
+	return testVal(line, "\"u12648430\"");
 }

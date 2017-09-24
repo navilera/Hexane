@@ -16,4 +16,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define STR_CMP(strA, strB)		(strncmp(strA, strB, strlen(strB)) == 0) && (strlen(strA) == strlen(strB))
+
+
 #endif /* SRC_MAIN_H_ */
