@@ -161,6 +161,12 @@ static bool storeSymbolTable(char* name, VmStack_t spval)
 
 		if(spval.type == VmStackType_Str)
 		{
+			/*
+			 * spval.val is came from token id name in Lexer::getStr().
+			 * token id name will be released (free) when next line input time.
+			 * symbol table value should be persistent.
+			 * so allocate new memory to symbol table slot and copy spval.val to symbol table.
+			 */
 			symbolTable[index].val.val = (uint64_t)(char*)malloc(strlen((char*)spval.val) + 1);
 			memset((void*)(symbolTable[index].val.val), 0, strlen((char*)spval.val) + 1);
 			strncpy((char*)(symbolTable[index].val.val), (char*)(spval.val), strlen((char*)spval.val));
@@ -184,6 +190,9 @@ static bool storeSymbolTable(char* name, VmStack_t spval)
 
 			if(spval.type == VmStackType_Str)
 			{
+				/*
+				 * same code above
+				 */
 				symbolTable[i].val.val = (uint64_t)(char*)malloc(strlen((char*)spval.val) + 1);
 				memset((void*)(symbolTable[i].val.val), 0, strlen((char*)spval.val) + 1);
 				strncpy((char*)(symbolTable[i].val.val), (char*)(spval.val), strlen((char*)spval.val));
