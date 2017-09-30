@@ -12,6 +12,7 @@ typedef enum {
 	VmStackType_Addr,
 	VmStackType_Int,
 	VmStackType_Str,
+	VmStackType_Str_NoQuote,
 	NumberOfVmStackType
 } VmStackType_t;
 

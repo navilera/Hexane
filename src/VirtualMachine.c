@@ -130,6 +130,10 @@ char* Vm_GetStackValue(VmStack_t* sp)
 	{
 		sprintf(resultStr, "\"%s\"", (char*)ret.val);
 	}
+	else if(ret.type == VmStackType_Str_NoQuote)
+	{
+		sprintf(resultStr, "%s", (char*)ret.val);
+	}
 	return resultStr;
 }
 
@@ -237,7 +241,15 @@ static int builtInFunction(char* funcName, VmStack_t* currentSp_in_out)
 		currentSp_in_out[-1].type = VmStackType_Str;
 		popSpNum = 0;
 	}
-		break;
+	break;
+	case BLTINFUN_bin:
+	{
+		char* binStr = BuiltInFunc_Bin(currentSp_in_out[-1].val);
+		currentSp_in_out[-1].val = (uint64_t)binStr;
+		currentSp_in_out[-1].type = VmStackType_Str_NoQuote;
+		popSpNum = 0;
+	}
+	break;
 	case BLTINFUN_No:
 	default:
 		return -1;
