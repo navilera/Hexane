@@ -24,7 +24,13 @@ typedef enum {
 	TOK_RIM,		// C
 	TOK_EQU,		// D
 	TOK_FUNC,		// E
-	TOK_ERR,		// F
+	TOK_GT,			// F
+	TOK_GTE,		// 10
+	TOK_LT,			// 11
+	TOK_LTE, 		// 12
+	TOK_CEQ,		// 13
+	TOK_NCEQ,		// 14
+	TOK_ERR,		// 15
 	NumberOfSymbols
 } Token_t;
 

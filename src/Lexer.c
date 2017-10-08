@@ -23,6 +23,12 @@
  * TOK_DIV	/
  * TOK_RIM	%
  * TOK_EQU	=
+ * TOK_GT	>
+ * TOK_GTE	>= | =>
+ * TOK_LT	<
+ * TOK_LTE	<= | =<
+ * TOK_CEQ	==
+ * TOK_NCEQ != | =!
  */
 
 static Token_t tokenBuffer[LEX_TOK_NUM_LIMIT];
@@ -72,7 +78,73 @@ Token_t* Lexer_GetTok(char* line)
 		else if(*ch == '*') {AddSimpleTok(TOK_MUL);}
 		else if(*ch == '/') {AddSimpleTok(TOK_DIV);}
 		else if(*ch == '%') {AddSimpleTok(TOK_RIM);}
-		else if(*ch == '=') {AddSimpleTok(TOK_EQU);}
+		else if(*ch == '=')
+		{
+			++ch;
+			if(*ch == '>')
+			{
+				AddSimpleTok(TOK_GTE);
+			}
+			else if(*ch == '<')
+			{
+				AddSimpleTok(TOK_LTE);
+			}
+			else if(*ch == '=')
+			{
+				AddSimpleTok(TOK_CEQ);
+			}
+			else if(*ch == '!')
+			{
+				AddSimpleTok(TOK_NCEQ);
+			}
+			else
+			{
+				// reverse lexer iterator
+				--ch;
+				AddSimpleTok(TOK_EQU);
+			}
+		}
+		else if(*ch == '>')
+		{
+			++ch;
+			if(*ch == '=')
+			{
+				AddSimpleTok(TOK_GTE);
+			}
+			else
+			{
+				// reverse lexer iterator
+				--ch;
+				AddSimpleTok(TOK_GT);
+			}
+		}
+		else if(*ch == '<')
+		{
+			++ch;
+			if(*ch == '=')
+			{
+				AddSimpleTok(TOK_LTE);
+			}
+			else
+			{
+				// reverse lexer iterator
+				--ch;
+				AddSimpleTok(TOK_LT);
+			}
+		}
+		else if(*ch == '!')
+		{
+			++ch;
+			if(*ch == '=')
+			{
+				AddSimpleTok(TOK_NCEQ);
+			}
+			else
+			{
+				setError(index, ch, line);
+				return tokenBuffer;
+			}
+		}
 		else if(*ch == '\n')
 		{
 			return tokenBuffer;
@@ -211,6 +283,7 @@ Token_t* Lexer_GetTok(char* line)
 			return tokenBuffer;
 		}
 
+		// reset for next loop
 		skipFunctionName = false;
 	}
 
