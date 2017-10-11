@@ -328,6 +328,38 @@ static bool GetFunctionName(void)
 	ASSERT(ASSERT_CMPSTR("c0ffee", getName), ASSERTMSG_STR_FAIL("c0ffee", getName));
 }
 
+static bool ConditionTokenGT(void)
+{
+	char* line = "$dec = 3 > 5 + 4 >= $n =>u332\n";
+	Token_t expect[16] = {TOK_ID, TOK_EQU, TOK_INT, TOK_GT, TOK_INT, TOK_PLUS, TOK_INT, TOK_GTE, TOK_ID, TOK_GTE, TOK_INT, TOK_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool ConditionTokenLT(void)
+{
+	char* line = "u332 <534 <= 902 =< $kos\n";
+	Token_t expect[16] = {TOK_INT, TOK_LT, TOK_INT, TOK_LTE, TOK_INT, TOK_LTE, TOK_ID, TOK_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool ConditionTokenEQ(void)
+{
+	char* line = "$kos== 9920 != $cmmso =! 849\n";
+	Token_t expect[16] = {TOK_ID, TOK_CEQ, TOK_INT, TOK_NCEQ, TOK_ID, TOK_NCEQ, TOK_INT, TOK_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool ConditionTokenEQErr(void)
+{
+	char* line = "$kos== 9920 !< $cmmso =! 849\n";
+	Token_t expect[16] = {TOK_ID, TOK_CEQ, TOK_INT, TOK_ERR, TOK_NOSYM};
+
+	return Common(line, expect);
+}
+
 static void Init(TestSuite_t* suite)
 {
     suite->name = suiteName;
@@ -367,6 +399,10 @@ static void Init(TestSuite_t* suite)
     AddTestCase(suite, FunctionCall02, "Function call weird name but Okay");
     AddTestCase(suite, FunctionCall03_err01, "Function call name error");
     AddTestCase(suite, GetFunctionName, "Function call get function name");
+    AddTestCase(suite, ConditionTokenGT, "Condition token GT and GTE");
+    AddTestCase(suite, ConditionTokenLT, "Condition token LT and LTE");
+    AddTestCase(suite, ConditionTokenEQ, "Condition token CEQ and NCEQ");
+    AddTestCase(suite, ConditionTokenEQErr, "Condition token NCEQ error");
 }
 
 REGISTER_SUITE_FUNC(LexerTest, Init)
