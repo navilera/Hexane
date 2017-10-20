@@ -30,7 +30,10 @@ typedef enum {
 	TOK_LTE, 		// 12
 	TOK_CEQ,		// 13
 	TOK_NCEQ,		// 14
-	TOK_ERR,		// 15
+	TOK_IF,			// 15
+	TOK_ELIF,		// 16
+	TOK_ELSE,		// 17
+	TOK_ERR,		// 18
 	NumberOfSymbols
 } Token_t;
 

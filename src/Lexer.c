@@ -29,6 +29,9 @@
  * TOK_LTE	<= | =<
  * TOK_CEQ	==
  * TOK_NCEQ != | =!
+ * TOK_IF	if
+ * TOK_ELIF	elif
+ * TOK_ELSE	else
  */
 
 static Token_t tokenBuffer[LEX_TOK_NUM_LIMIT];
@@ -46,6 +49,7 @@ static bool getId(char** chBack, char** idTokStr);
 static bool getStr(char** chBack, char** idTokStr);
 static bool cancelPrevToken(int index, char* ch, char* line);
 static void setError(int index, char* ch, char* line);
+static bool checkReservedKeyword(char* tok);
 
 #define AddSimpleTok(tok) {tokenBuffer[index] = tok; ++index; ++ch;}
 
@@ -183,6 +187,12 @@ Token_t* Lexer_GetTok(char* line)
 				memset(idTokStr, 0, strlen(idTokBuffer) + 1);
 				memcpy(idTokStr, idTokBuffer, strlen(idTokBuffer));
 
+				if(checkReservedKeyword(idTokStr) == false)
+				{
+					setError(index, ch, line);
+					return tokenBuffer;
+				}
+
 				idNameBuffer[index] = idTokStr;
 				tokenBuffer[index] = TOK_FUNC;
 				++index;
@@ -196,6 +206,37 @@ Token_t* Lexer_GetTok(char* line)
 				ch = chBackup;
 				skipFunctionName = true;
 				continue;
+			}
+		}
+		else if(*ch == 'i')
+		{
+			++ch;
+			if(*ch == 'f')
+			{
+				AddSimpleTok(TOK_IF);
+			}
+			else
+			{
+				setError(index, ch, line);
+				return tokenBuffer;
+			}
+		}
+		else if(*ch == 'e')
+		{
+			if((*ch == 'e') && (*(ch+1) == 'l') && (*(ch+2) == 'i') && (*(ch+3) == 'f'))
+			{
+				ch += 3;
+				AddSimpleTok(TOK_ELIF);
+			}
+			else if((*ch == 'e') && (*(ch+1) == 'l') && (*(ch+2) == 's') && (*(ch+3) == 'e'))
+			{
+				ch += 3;
+				AddSimpleTok(TOK_ELSE);
+			}
+			else
+			{
+				setError(index, ch, line);
+				return tokenBuffer;
 			}
 		}
 		else if((*ch >= '0' && *ch <= '9') || (*ch >= 'a' && *ch <= 'f') || (*ch >= 'A' && *ch <= 'F'))
@@ -467,4 +508,18 @@ static void setError(int index, char* ch, char* line)
 {
 	tokenBuffer[index] = TOK_ERR;
 	symErrorPosition = (uint32_t)(ch - line);
+}
+
+static char* reservedKeyword[] = {"if", "elif", "else", NULL};
+static bool checkReservedKeyword(char* tok)
+{
+	for(int i = 0; reservedKeyword[i] != NULL ; i++)
+	{
+		if(STR_CMP(tok, reservedKeyword[i]))
+		{
+			return false;
+		}
+	}
+
+	return true;
 }

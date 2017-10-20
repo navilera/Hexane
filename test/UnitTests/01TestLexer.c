@@ -360,6 +360,54 @@ static bool ConditionTokenEQErr(void)
 	return Common(line, expect);
 }
 
+static bool ReservedKeywordErr01(void)
+{
+	char* line = "$kos== 9920 + if( $cmmso) =! 849\n";
+	Token_t expect[16] = {TOK_ID, TOK_CEQ, TOK_INT, TOK_PLUS, TOK_ERR, TOK_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool ReservedKeywordErr02(void)
+{
+	char* line = "$kos== 9920 + elif( $cmmso) =! 849\n";
+	Token_t expect[16] = {TOK_ID, TOK_CEQ, TOK_INT, TOK_PLUS, TOK_ERR, TOK_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool ReservedKeywordErr03(void)
+{
+	char* line = "$kos== 9920 + else( $cmmso) =! 849\n";
+	Token_t expect[16] = {TOK_ID, TOK_CEQ, TOK_INT, TOK_PLUS, TOK_ERR, TOK_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool ReservedKeywordIfElifElse01(void)
+{
+	char* line = "$kos== 9920 if != $cmmso =! 849\n";
+	Token_t expect[16] = {TOK_ID, TOK_CEQ, TOK_INT, TOK_IF, TOK_NCEQ, TOK_ID, TOK_NCEQ, TOK_INT, TOK_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool ReservedKeywordIfElifElse02(void)
+{
+	char* line = "$kos== 9920 elif != $cmmso =! 849\n";
+	Token_t expect[16] = {TOK_ID, TOK_CEQ, TOK_INT, TOK_ELIF, TOK_NCEQ, TOK_ID, TOK_NCEQ, TOK_INT, TOK_NOSYM};
+
+	return Common(line, expect);
+}
+
+static bool ReservedKeywordIfElifElse03(void)
+{
+	char* line = "$kos== 9920 else != $cmmso =! 849\n";
+	Token_t expect[16] = {TOK_ID, TOK_CEQ, TOK_INT, TOK_ELSE, TOK_NCEQ, TOK_ID, TOK_NCEQ, TOK_INT, TOK_NOSYM};
+
+	return Common(line, expect);
+}
+
 static void Init(TestSuite_t* suite)
 {
     suite->name = suiteName;
@@ -403,6 +451,12 @@ static void Init(TestSuite_t* suite)
     AddTestCase(suite, ConditionTokenLT, "Condition token LT and LTE");
     AddTestCase(suite, ConditionTokenEQ, "Condition token CEQ and NCEQ");
     AddTestCase(suite, ConditionTokenEQErr, "Condition token NCEQ error");
+    AddTestCase(suite, ReservedKeywordErr01, "Reserved keyword Err01 - if");
+    AddTestCase(suite, ReservedKeywordErr02, "Reserved keyword Err02 - elif");
+    AddTestCase(suite, ReservedKeywordErr03, "Reserved keyword Err03 - else");
+    AddTestCase(suite, ReservedKeywordIfElifElse01, "Reserved keyword - if");
+    AddTestCase(suite, ReservedKeywordIfElifElse02, "Reserved keyword - elif");
+    AddTestCase(suite, ReservedKeywordIfElifElse03, "Reserved keyword - else");
 }
 
 REGISTER_SUITE_FUNC(LexerTest, Init)
