@@ -3,3 +3,7 @@ obj
 test/testgo
 /.cproject
 /.project
+debug
+release
+.*
+ipch
